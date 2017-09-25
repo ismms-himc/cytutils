@@ -1,11 +1,19 @@
 # cytutils
 Cytometry quality control and reproducibility utilities. The methods available
 in this package were developed by the Human Immune Monitoring Center at the
-Icahn School of Medicine at Mount Sinai.
+Icahn School of Medicine at Mount Sinai. Please contact Adeeb Rahman at
+(adeeb.rahman@mssm.edu) with questions.
 
 ## Installation
 
-TODO
+The `cytutils` package is currently only available as a direct installation from
+github. You can use the `devtools` package to install it:
+
+```r
+install.packages("devtools")
+library(devtools)
+install_github("kbroman/broman")
+```
 
 ## Available Methods
 
