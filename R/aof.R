@@ -94,15 +94,15 @@ calculateAof <- function(x, pos_indices, width = 0.05, cofactor = NULL) {
       aof <- Inf
     } else {
       pos_indices <- unlist(y_indices[pos_labels])
+      aof <- calculateAof(x, pos_indices, width = width, cofactor = cofactor)
     }
 
-    calculateAof(x, pos_indices, width = width, cofactor = cofactor)
+    aof
   })
 
   # Return the minimal AOF found.
   min(unlist(aof_values))
 }
-
 
 #' Greedy search for optimal Average Overlap Frequency (AOF) values.
 #'
@@ -125,11 +125,7 @@ greedyCytometryAof <- function(fcs_data,
                                channel_names = colnames(fcs_data),
                                width = 0.05,
                                cofactor = NULL,
-                               verbose = FALSE) {
-  if (!is.factor(y)) {
-    stop("y should be a factor vector.")
-  }
-
+                               verbose = TRUE) {
   if (length(y) != nrow(fcs_data)) {
     stop("y length should be equal to number of rows in fcs_data")
   }
@@ -138,8 +134,12 @@ greedyCytometryAof <- function(fcs_data,
     stop("channel_names should all be columns of fcs_data")
   }
 
-  if (any(is.nan(fca_data[, channel_names]))) {
-    stop("cannot calculate AOF when data includes nan values")
+  if (anyNA(fcs_data[, channel_names])) {
+    stop("cannot calculate AOF when data includes missing values")
+  }
+
+  if (!is.factor(y)) {
+    y <- as.factor(y)
   }
 
   # Find indices of cells in each cluster.

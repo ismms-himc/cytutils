@@ -5,7 +5,7 @@
 \title{Greedy search for optimal Average Overlap Frequency (AOF) values.}
 \usage{
 greedyCytometryAof(fcs_data, y, channel_names = colnames(fcs_data),
-  width = 0.05, cofactor = NULL, verbose = FALSE)
+  width = 0.05, cofactor = NULL, verbose = TRUE)
 }
 \arguments{
 \item{fcs_data}{A numerical matrix (NxD) of acquired cytometry data. Each row

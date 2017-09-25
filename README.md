@@ -31,7 +31,8 @@ material of:
 * Amir ED, Davis KL, Tadmor MD, Simonds EF, Levine JH, Bendall SC, Shenfeld DK,
 Krishnaswamy S, Nolan GP, Pe'er D. viSNE enables visualization of high
 dimensional single-cell data and reveals phenotypic heterogeneity of leukemia.
-Nat Biotechnol. 2013 Jun;31(6):545-52. [Link](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC4076922/)
+Nat Biotechnol. 2013 Jun;31(6):545-52.
+[PubMedLink](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC4076922/)
 
 `calculateJsDivergence` calculates the JS divergence between two probability
 distributions. `calculateDrJsDivergence` calculates it between two matrices
@@ -42,4 +43,39 @@ x <- read.csv("visne_map_1.csv")
 y <- read.csv("visne_map_2.csv")
 
 calculateDrJsDivergence(x, y)
+```
+
+### Average Overlap Frequency
+
+The Average Overlap Frequency (AOF) is a simple, intuitive metric for the
+staining quality of cytometry data. The method assumes that channels have a
+bimodal distribution, corresponding to negative and positive populations. It
+then quantifies how many negative cells are "positive-looking" and vice versa.
+The AOF returns a value between 0 and 1, where 0 signifies perfect separation.
+An in-depth explanation can be found here:
+
+* Amir ED, Guo XV, Mayovska O, Rahman A. Average Overlap Frequency: A simple
+metric to evaluate staining quality and community identification in high
+dimensional mass cytometry experiments. J Immunol Methods. 2017 Sep 4.
+[PubMed Link](https://www.ncbi.nlm.nih.gov/pubmed/28882613)
+
+If the negative and positive populations for a given marker are known (for
+example, using manual gating) use the `calculateAof` function. Alternatively,
+we include the greedy search algorithm that uses a clustering of the data to
+find (for each marker) a partition that minimizes the AOF. The greedy method is
+available using the `greedyCytometryAof` function. For example:
+
+```r
+fcs_data <- read.csv("fcs_data.csv")
+# Load output of semi-supervised clustering method.
+y <- read.csv("clustering.csv")
+
+# Calculate AOF for CD3 using T cells versus non-T cells.
+x <- fcs_data[["CD3"]]
+t_cell_indices <- grep("t_cell", y)
+calculateAof(x, t_cell_indices)
+
+# Use greedy search to optimize AOF for each channel.
+channel_names <- c("CD3", "CD19", "CD33", "CD56", "CD42")
+greedyCytometryAof(fcs_data, y, channel_names)
 ```
