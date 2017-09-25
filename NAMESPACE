@@ -2,3 +2,4 @@
 
 export(calculateDrJsDivergence)
 export(calculateJsDivergence)
+import(MASS)
