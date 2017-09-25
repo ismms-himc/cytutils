@@ -11,7 +11,7 @@ calculateAof(x, pos_indices, width = 0.05, cofactor = NULL)
 
 \item{pos_indices}{Indices of cells positive for this channel.}
 
-\item{width}{Width of high threshold of negative populationa and low
+\item{width}{Width of high threshold of negative population and low
 threshold of positive population.}
 
 \item{cofactor}{If supplied, data will be transformed using inverse

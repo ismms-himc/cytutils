@@ -4,7 +4,7 @@
 #'
 #' @param x Numeric vector corresponding to one channel in cytometry data.
 #' @param pos_indices Indices of cells positive for this channel.
-#' @param width Width of high threshold of negative populationa and low
+#' @param width Width of high threshold of negative population and low
 #' threshold of positive population.
 #' @param cofactor If supplied, data will be transformed using inverse
 #' hyperbolic sin with given cofactor.
