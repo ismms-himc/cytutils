@@ -1,0 +1,19 @@
+citEntry(
+   entry = "article",
+   title = "Average Overlap Frequency: A simple metric to evaluate staining quality and community identification in high dimensional mass cytometry experiments",
+   author = "El-ad D Amir and Xinzheng V Guo and Oksana Mayovska and Adeeb H Rahman",
+   journal = "J Immunol Methods",
+   year = 2017,
+   textVersion = "Amir ED, Guo XV, Mayovska O, Rahman A. Average Overlap Frequency: A simple metric to evaluate staining quality and community identification in high dimensional mass cytometry experiments. J Immunol Methods. 2017 Sep 4.",
+   url = "https://www.ncbi.nlm.nih.gov/pubmed/28882613"
+)
+
+citEntry(
+   entry = "article",
+   title = "viSNE enables visualization of high dimensional single-cell data and reveals phenotypic heterogeneity of leukemia",
+   author = "El-ad D Amir and Kara L Davis and Michelle D Tadmor and Erin F Simonds and Jacob H Levine and Sean C Bendall and Daniel K Shenfeld and Smita Krishnaswamy and Garry P Nolan and Dana Pe'er",
+   journal = "Nat Biotechnol",
+   year = 2013,
+   textVersion = "Amir ED, Davis KL, Tadmor MD, Simonds EF, Levine JH, Bendall SC, Shenfeld DK, Krishnaswamy S, Nolan GP, Pe'er D. viSNE enables visualization of high dimensional single-cell data and reveals phenotypic heterogeneity of leukemia. Nat Biotechnol. 2013 Jun;31(6):545-52",
+   url = "https://www.ncbi.nlm.nih.gov/pmc/articles/PMC4076922"
+)

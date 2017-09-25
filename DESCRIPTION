@@ -1,12 +1,14 @@
 Package: cytutils
 Type: Package
-Title: What the Package Does (Title Case)
+Title: Cytometry quality control and reproducibility utilities
 Version: 0.1.0
-Author: Who wrote it
-Maintainer: The package maintainer <yourself@somewhere.net>
-Description: More about what it does (maybe more than one line)
-    Use four spaces when indenting paragraphs within the Description.
-License: What license is it under?
+Author: Human Immune Monitoring Center at the Icahn School of Medicine at Mount Sinai
+Maintainer: El-ad David Amir <el.ad.david.amir@gmail.com>
+Description: Cytometry quality control and reproducibility utilities. The
+    methods available in this package were developed by the Human Immune
+    Monitoring Center at the Icahn School of Medicine at Mount Sinai. Please
+    contact Adeeb Rahman at adeeb.rahman@mssm.edu with suggestions and questions.
+License: GNU General Public License v3
 Encoding: UTF-8
 LazyData: true
 RoxygenNote: 6.0.1
