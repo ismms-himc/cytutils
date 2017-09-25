@@ -17,7 +17,7 @@ each cell.}
 \item{channel_names}{A character vector which lists the columns (channels) in
 fcs_data for which to calculate the AOF.}
 
-\item{width}{Width of high threshold of negative populationa and low
+\item{width}{Width of high threshold of negative population and low
 threshold of positive population.}
 
 \item{cofactor}{If supplied, data will be transformed using inverse
