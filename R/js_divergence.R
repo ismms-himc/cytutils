@@ -53,6 +53,7 @@ calculateJsDivergence <- function(p, q) {
 #' @inheritParams .calculateMatrixKde
 #' @return A numeric for the JS divergence between the maps.
 #' @seealso \code{\link{calculateJsDivergence}}
+#' @export
 calculateDrJsDivergence <- function(x, y, n = 2 ^ 8) {
   if (ncol(x) != 2) {
     stop("x should be a two-dimensional numeric matrix")
