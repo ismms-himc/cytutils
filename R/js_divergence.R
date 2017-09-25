@@ -1,7 +1,3 @@
-  # JS divergence calculation. Original code:
-  #
-  # http://stackoverflow.com/questions/11226627/jensen-shannon-divergence-in-r
-
 #' Calculate the Jensen-Shannon divergence.
 #'
 #' Given two probability distributions, calculate the Jensen-Shannon (JS)
@@ -34,12 +30,13 @@ calculateJsDivergence <- function(p, q) {
 #' @param n Number of grid points for KDE.
 #' @param lims The limits of the rectangle covered by the KDE.
 #' @return A one-dimensional numeric vector for the probability density.
+#' @import MASS
 .calculateMatrixKde <- function(mtx, n = 25, lims = NULL) {
   if (is.null(lims)) {
     stop("Kernel density estimation limits parameter is missing")
   }
 
-  density <- MASS::kde2d(mtx[, 1], mtx[, 2], n = n, lims = lims)
+  density <- kde2d(mtx[, 1], mtx[, 2], n = n, lims = lims)
   density_vector <- as.vector(density$z)
   density_vector / sum(density_vector)
 }
