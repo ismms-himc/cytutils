@@ -49,6 +49,91 @@ calculateAof <- function(x, pos_indices, width = 0.05, cofactor = NULL) {
   mean(c(mean(pos <= neg_high), mean(neg >= pos_low)))
 }
 
+#' TODO
+.greedyChannelAof <- function(x, y, cofactor = NULL) {
+  n <- length(x)
+  df <- tibble::tibble(x = x, y = NA)
+  # TODO fix this
+  for (class_label in names(class_indices)) {
+    df$class_label[class_indices[[class_label]]] <- class_label
+  }
+  df_stats <- df %>%
+    dplyr::group_by(class_label) %>%
+    dplyr::summarize(freq = n() / n, mean_v = mean(v)) %>%
+    dplyr::arrange(mean_v)
+  df_stats$cum_sum_freq = cumsum(df_stats$freq)
+
+  find_x_y <- function(df_stats, cum_sum_thresh) {
+    x_class_labels <- as.character(
+      dplyr::filter(df_stats, cum_sum_freq <= cum_sum_thresh)$class_label)
+    x <- df$v[unlist(class_indices[x_class_labels])]
+    y_class_labels <-
+      as.character(setdiff(df_stats$class_label, x_class_labels))
+    y <- df$v[unlist(class_indices[y_class_labels])]
+
+    list(x = x, y = y)
+  }
+
+  compute_aof <- "aof" %in% metrics
+  compute_si <- "si" %in% metrics
+
+  # cum sum thresholds for search
+  search_thresh <- c(
+    seq(0.2, 0.5, 0.05),
+    seq(0.5, 0.8, 0.03),
+    seq(0.8, 0.98, 0.02), 0.99
+  )
+
+  qc_metrics <- lapply(search_thresh, function(cum_sum_thresh) {
+    xy <- find_x_y(df_stats, cum_sum_thresh)
+    x <- xy$x
+    y <- xy$y
+
+    cum_sum_thresh_aof <- Inf
+    cum_sum_thresh_si <- -Inf
+
+    if (length(x) > 0 & length(y) > 0) {
+      if (compute_aof)  cum_sum_thresh_aof <- aof(x, y)
+      if (compute_si) {
+        cum_sum_thresh_si <- si(x, y)
+        if (is.nan(cum_sum_thresh_si)) cum_sum_thresh_si <- 0
+      }
+    }
+
+    dplyr::data_frame(
+      cum_sum_thresh = cum_sum_thresh,
+      aof = cum_sum_thresh_aof,
+      si = cum_sum_thresh_si
+    )
+  }) %>% dplyr::bind_rows()
+
+  # return minimum aof and maximum si
+  output <- list()
+
+  if (compute_aof) {
+    min_aof_index <- min(which(qc_metrics$aof == min(qc_metrics$aof)))
+    min_aof_xy <- find_x_y(df_stats, qc_metrics$cum_sum_thresh[[min_aof_index]])
+    output$aof <- list(
+      value = qc_metrics$aof[min_aof_index],
+      x = min_aof_xy$x,
+      y = min_aof_xy$y
+    )
+  }
+
+  if (compute_si) {
+    max_si_index <- min(which(qc_metrics$si == max(qc_metrics$si)))
+    max_si_xy <- find_x_y(df_stats, qc_metrics$cum_sum_thresh[[max_si_index]])
+    output$si <- list(
+      value = qc_metrics$si[max_si_index],
+      x = max_si_xy$x,
+      y = max_si_xy$y
+    )
+  }
+
+  output
+}
+
+
 #' Greedy search for optimal Average Overlap Frequency (AOF) values.
 #'
 #' Given a cytometry data matrix and its clustering scheme, use a greedy search
@@ -62,12 +147,14 @@ calculateAof <- function(x, pos_indices, width = 0.05, cofactor = NULL) {
 #' fcs_data for which to calculate the AOF.
 #' @param cofactor A numeric. If specified, fcs_data will be transformed using
 #' inverse hyperbolic sin (arcsinh) with this cofactor.
+#' @param verbose Boolean. Should the function report progress to terminal.
 #' @return A data frame with AOF values for each channel.
 #' @export
-calculateCytometryAof <- function(fcs_data,
-                                  y,
-                                  channel_names = colnames(fcs_data),
-                                  cofactor = NULL) {
+greedyCytometryAof <- function(fcs_data,
+                               y,
+                               channel_names = colnames(fcs_data),
+                               cofactor = NULL,
+                               verbose = FALSE) {
   if (!is.factor(y)) {
     stop("y should be a factor vector.")
   }
@@ -80,14 +167,19 @@ calculateCytometryAof <- function(fcs_data,
     stop("channel_names should all be columns of fcs_data")
   }
 
-  x <- fcs_data[, channel_names]
-
-  if (!is.null(cofactor)) {
-    x <- asinh(x / cofactor)
-  }
-
-  if (any(is.nan(x))) {
+  if (any(is.nan(fca_data[, channel_names]))) {
     stop("cannot calculate AOF when data includes nan values")
   }
 
+  # Run greedy algorithm over each channel.
+  aof_values <- lapply(channel_names, function(channel_name) {
+    if (verbose) message(channel_name)
+    x <- fcs_data[[channel_name]]
+    data.frame(
+      ChannelName = channel_name,
+      Aof = .greedyChannelAof(x, y, cofactor)
+    )
+  })
+
+  do.call(rbind, aof_values)
 }
