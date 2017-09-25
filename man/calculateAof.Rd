@@ -4,7 +4,7 @@
 \alias{calculateAof}
 \title{Average Overlap Frequency (AOF).}
 \usage{
-calculateAof(x, pos_indices, width = 0.05)
+calculateAof(x, pos_indices, width = 0.05, cofactor = NULL)
 }
 \arguments{
 \item{x}{Numeric vector corresponding to one channel in cytometry data.}
@@ -13,6 +13,9 @@ calculateAof(x, pos_indices, width = 0.05)
 
 \item{width}{Width of high threshold of negative populationa and low
 threshold of positive population.}
+
+\item{cofactor}{If supplied, data will be transformed using inverse
+hyperbolic sin with given cofactor.}
 }
 \value{
 The AOF between positive and negative populations for x.

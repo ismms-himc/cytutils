@@ -1,13 +1,13 @@
 #' Average Overlap Frequency (AOF).
 #'
 #' Calculate the Average Overlap Frequency (AOF) for a single cytometry channel.
-
+#'
 #' @param x Numeric vector corresponding to one channel in cytometry data.
 #' @param pos_indices Indices of cells positive for this channel.
 #' @param width Width of high threshold of negative populationa and low
 #' threshold of positive population.
-#' @param cofactor If supplied, x will be transformed using inverse hyperbolic
-#' sin with given cofactor.
+#' @param cofactor If supplied, data will be transformed using inverse
+#' hyperbolic sin with given cofactor.
 #' @return The AOF between positive and negative populations for x.
 #' @export
 calculateAof <- function(x, pos_indices, width = 0.05, cofactor = NULL) {
@@ -49,86 +49,58 @@ calculateAof <- function(x, pos_indices, width = 0.05, cofactor = NULL) {
   mean(c(mean(pos <= neg_high), mean(neg >= pos_low)))
 }
 
-#' TODO
-#' indices vectors
-.greedyChannelAof <- function(x, y_indices, cofactor = NULL) {
-  # Calculate mean and frequency of each cluster.
-  y_labels <- names(y_indices)
-  cluster_stats <- lapply(y_labels, function(y_label) {
-    y_x <- x[y_indices[[y_label]], ]
-    data.frame(
-      YLabel = y_label,
-      Mean = mean(y_x),
-      Freq = length(y_x) / length(x)
-    )
-  })
-  cluster_stats <- do.call(cluster_stats, rbind)
-
-  # Order clusters by mean x and calculate cumulative frequency.
-  cluster_stats <- cluster_stats[order(cluster_stats$Mean), ]
-  cluster_stats$CumFreq <- cumsum(cluster_stats$Freq)
-
-
-
-  # TODO continue here
-  find_x_y <- function(df_stats, cum_sum_thresh) {
-    x_class_labels <- as.character(
-      dplyr::filter(df_stats, cum_sum_freq <= cum_sum_thresh)$class_label)
-    x <- df$v[unlist(class_indices[x_class_labels])]
-    y_class_labels <-
-      as.character(setdiff(df_stats$class_label, x_class_labels))
-    y <- df$v[unlist(class_indices[y_class_labels])]
-
-    list(x = x, y = y)
-  }
-
-  compute_aof <- "aof" %in% metrics
-  compute_si <- "si" %in% metrics
-
-  # cum sum thresholds for search
+#' Greedy search for optimal Average Overlap Frequency (AOF) for one channel.
+#'
+#' Given a cytometry data matrix and its clustering scheme, use a greedy search
+#' strategy to find a partition of clusters that minimizes the AOF for each
+#' marker.
+#'
+#' @param y_indices A list of indices vectors, one for each cluster.
+#' @return Optimal AOF for x.
+#' @export
+#' @inheritParams calculateAof
+.greedyChannelAof <- function(x, y_indices, width = 0.05, cofactor = NULL) {
+  # Cumulative frequency thresholds for search.
   search_thresh <- c(
     seq(0.2, 0.5, 0.05),
     seq(0.5, 0.8, 0.03),
     seq(0.8, 0.98, 0.02), 0.99
   )
 
-  qc_metrics <- lapply(search_thresh, function(cum_sum_thresh) {
-    xy <- find_x_y(df_stats, cum_sum_thresh)
-    x <- xy$x
-    y <- xy$y
+  # Calculate mean and frequency of each cluster.
+  y_labels <- names(y_indices)
+  cluster_stats <- lapply(y_labels, function(y_label) {
+    y_x <- x[y_indices[[y_label]]]
+    data.frame(
+      YLabel = y_label,
+      Mean = mean(y_x),
+      Freq = length(y_x) / length(x)
+    )
+  })
+  cluster_stats <- do.call(rbind, cluster_stats)
 
-    cum_sum_thresh_aof <- Inf
-    cum_sum_thresh_si <- -Inf
+  # Order clusters by mean x and calculate cumulative frequency.
+  cluster_stats <- cluster_stats[order(cluster_stats$Mean), ]
+  cluster_stats$CumFreq <- cumsum(cluster_stats$Freq)
 
-    if (length(x) > 0 & length(y) > 0) {
-      if (compute_aof)  cum_sum_thresh_aof <- aof(x, y)
-      if (compute_si) {
-        cum_sum_thresh_si <- si(x, y)
-        if (is.nan(cum_sum_thresh_si)) cum_sum_thresh_si <- 0
-      }
+  # Calculate AOF for each of the cumulative frequency thresholds.
+  aof_values <- lapply(search_thresh, function(thresh) {
+    # Find indices for all clusters positive for this threshold.
+    pos_labels <-
+      as.character(cluster_stats$YLabel[cluster_stats$CumFreq > thresh])
+    if ((length(pos_labels) == 0) |
+        (length(pos_labels) == nrow(cluster_stats))) {
+      # Either positive or negative populations are empty.
+      aof <- Inf
+    } else {
+      pos_indices <- unlist(y_indices[pos_labels])
     }
 
-    dplyr::data_frame(
-      cum_sum_thresh = cum_sum_thresh,
-      aof = cum_sum_thresh_aof,
-      si = cum_sum_thresh_si
-    )
-  }) %>% dplyr::bind_rows()
+    calculateAof(x, pos_indices, width = width, cofactor = cofactor)
+  })
 
-  # return minimum aof and maximum si
-  output <- list()
-
-  if (compute_aof) {
-    min_aof_index <- min(which(qc_metrics$aof == min(qc_metrics$aof)))
-    min_aof_xy <- find_x_y(df_stats, qc_metrics$cum_sum_thresh[[min_aof_index]])
-    output$aof <- list(
-      value = qc_metrics$aof[min_aof_index],
-      x = min_aof_xy$x,
-      y = min_aof_xy$y
-    )
-  }
-
-  output
+  # Return the minimal AOF found.
+  min(unlist(aof_values))
 }
 
 
@@ -144,14 +116,14 @@ calculateAof <- function(x, pos_indices, width = 0.05, cofactor = NULL) {
 #' each cell.
 #' @param channel_names A character vector which lists the columns (channels) in
 #' fcs_data for which to calculate the AOF.
-#' @param cofactor A numeric. If specified, fcs_data will be transformed using
-#' inverse hyperbolic sin (arcsinh) with this cofactor.
 #' @param verbose Boolean. Should the function report progress to terminal.
 #' @return A data frame with AOF values for each channel.
 #' @export
+#' @inheritParams calculateAof
 greedyCytometryAof <- function(fcs_data,
                                y,
                                channel_names = colnames(fcs_data),
+                               width = 0.05,
                                cofactor = NULL,
                                verbose = FALSE) {
   if (!is.factor(y)) {
@@ -184,7 +156,7 @@ greedyCytometryAof <- function(fcs_data,
     x <- fcs_data[[channel_name]]
     data.frame(
       ChannelName = channel_name,
-      Aof = .greedyChannelAof(x, y_indices, cofactor)
+      Aof = .greedyChannelAof(x, y_indices, width = width, cofactor = cofactor)
     )
   })
 
