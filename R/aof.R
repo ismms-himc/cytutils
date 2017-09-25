@@ -11,14 +11,14 @@
 #' @return The AOF between positive and negative populations for x.
 #' @export
 calculateAof <- function(x, pos_indices, width = 0.05) {
-  if (max(pos_indices) > length(x)) {
-    stop("positive population indices include values higher than length of x")
-  }
   if (length(pos_indices) == 0) {
     stop("no cells in positive population")
   }
   if (length(pos_indices) == length(x)) {
     stop("no cells in negative population")
+  }
+  if (max(pos_indices) > length(x)) {
+    stop("positive population indices include values higher than length of x")
   }
 
   # Set up positive and negative populations.
