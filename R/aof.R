@@ -1,5 +1,3 @@
-
-
 #' Average Overlap Frequency (AOF).
 #'
 #' Calculate the Average Overlap Frequency (AOF) for a single cytometry channel.
@@ -8,9 +6,11 @@
 #' @param pos_indices Indices of cells positive for this channel.
 #' @param width Width of high threshold of negative populationa and low
 #' threshold of positive population.
+#' @param cofactor If supplied, x will be transformed using inverse hyperbolic
+#' sin with given cofactor.
 #' @return The AOF between positive and negative populations for x.
 #' @export
-calculateAof <- function(x, pos_indices, width = 0.05) {
+calculateAof <- function(x, pos_indices, width = 0.05, cofactor = NULL) {
   if (length(pos_indices) == 0) {
     stop("no cells in positive population")
   }
@@ -20,6 +20,8 @@ calculateAof <- function(x, pos_indices, width = 0.05) {
   if (max(pos_indices) > length(x)) {
     stop("positive population indices include values higher than length of x")
   }
+
+  if (!is.null(cofactor)) x <- asinh(x / cofactor)
 
   # Set up positive and negative populations.
   pos <- x[pos_indices]
@@ -47,14 +49,15 @@ calculateAof <- function(x, pos_indices, width = 0.05) {
   mean(c(mean(pos <= neg_high), mean(neg >= pos_low)))
 }
 
-
-#' Cytometry calculation of Average Overlap Frequency (AOF).
+#' Greedy search for optimal Average Overlap Frequency (AOF) values.
 #'
-#' Calculate the Average Overlap Frequency (AOF) for a cytometry data matrix.
+#' Given a cytometry data matrix and its clustering scheme, use a greedy search
+#' strategy to find a partition of clusters that minimizes the AOF for each
+#' marker.
 #'
 #' @param fcs_data A numerical matrix (NxD) of acquired cytometry data. Each row
 #' corresponds to a cell, each column to a channel.
-#' @param pos_indices A list of
+#' @param y A factor vector of length N which includes the cluster of each cell.
 #' @param channel_names A character vector which lists the columns (channels) in
 #' fcs_data for which to calculate the AOF.
 #' @param cofactor A numeric. If specified, fcs_data will be transformed using
