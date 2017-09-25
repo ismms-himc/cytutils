@@ -23,7 +23,7 @@ material of:
 * Amir ED, Davis KL, Tadmor MD, Simonds EF, Levine JH, Bendall SC, Shenfeld DK,
 Krishnaswamy S, Nolan GP, Pe'er D. viSNE enables visualization of high
 dimensional single-cell data and reveals phenotypic heterogeneity of leukemia.
-Nat Biotechnol. 2013 Jun;31(6):545-52.
+Nat Biotechnol. 2013 Jun;31(6):545-52. [Link](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC4076922/)
 
 `calculateJsDivergence` calculates the JS divergence between two probability
 distributions. `calculateDrJsDivergence` calculates it between two matrices
