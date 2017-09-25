@@ -50,19 +50,27 @@ calculateAof <- function(x, pos_indices, width = 0.05, cofactor = NULL) {
 }
 
 #' TODO
-.greedyChannelAof <- function(x, y, cofactor = NULL) {
-  n <- length(x)
-  df <- tibble::tibble(x = x, y = NA)
-  # TODO fix this
-  for (class_label in names(class_indices)) {
-    df$class_label[class_indices[[class_label]]] <- class_label
-  }
-  df_stats <- df %>%
-    dplyr::group_by(class_label) %>%
-    dplyr::summarize(freq = n() / n, mean_v = mean(v)) %>%
-    dplyr::arrange(mean_v)
-  df_stats$cum_sum_freq = cumsum(df_stats$freq)
+#' indices vectors
+.greedyChannelAof <- function(x, y_indices, cofactor = NULL) {
+  # Calculate mean and frequency of each cluster.
+  y_labels <- names(y_indices)
+  cluster_stats <- lapply(y_labels, function(y_label) {
+    y_x <- x[y_indices[[y_label]], ]
+    data.frame(
+      YLabel = y_label,
+      Mean = mean(y_x),
+      Freq = length(y_x) / length(x)
+    )
+  })
+  cluster_stats <- do.call(cluster_stats, rbind)
 
+  # Order clusters by mean x and calculate cumulative frequency.
+  cluster_stats <- cluster_stats[order(cluster_stats$Mean), ]
+  cluster_stats$CumFreq <- cumsum(cluster_stats$Freq)
+
+
+
+  # TODO continue here
   find_x_y <- function(df_stats, cum_sum_thresh) {
     x_class_labels <- as.character(
       dplyr::filter(df_stats, cum_sum_freq <= cum_sum_thresh)$class_label)
@@ -120,16 +128,6 @@ calculateAof <- function(x, pos_indices, width = 0.05, cofactor = NULL) {
     )
   }
 
-  if (compute_si) {
-    max_si_index <- min(which(qc_metrics$si == max(qc_metrics$si)))
-    max_si_xy <- find_x_y(df_stats, qc_metrics$cum_sum_thresh[[max_si_index]])
-    output$si <- list(
-      value = qc_metrics$si[max_si_index],
-      x = max_si_xy$x,
-      y = max_si_xy$y
-    )
-  }
-
   output
 }
 
@@ -142,7 +140,8 @@ calculateAof <- function(x, pos_indices, width = 0.05, cofactor = NULL) {
 #'
 #' @param fcs_data A numerical matrix (NxD) of acquired cytometry data. Each row
 #' corresponds to a cell, each column to a channel.
-#' @param y A factor vector of length N which includes the cluster of each cell.
+#' @param y A factor vector of length N which includes the cluster assignment of
+#' each cell.
 #' @param channel_names A character vector which lists the columns (channels) in
 #' fcs_data for which to calculate the AOF.
 #' @param cofactor A numeric. If specified, fcs_data will be transformed using
@@ -171,13 +170,21 @@ greedyCytometryAof <- function(fcs_data,
     stop("cannot calculate AOF when data includes nan values")
   }
 
+  # Find indices of cells in each cluster.
+  if (verbose) message("Converting cluster assignments to indices vectors")
+  y_labels <- unique(y)
+  y_indices <- lapply(y_labels, function(y_label) {
+    which(y == y_label)
+  })
+  names(y_indices) <- y_labels
+
   # Run greedy algorithm over each channel.
   aof_values <- lapply(channel_names, function(channel_name) {
     if (verbose) message(channel_name)
     x <- fcs_data[[channel_name]]
     data.frame(
       ChannelName = channel_name,
-      Aof = .greedyChannelAof(x, y, cofactor)
+      Aof = .greedyChannelAof(x, y_indices, cofactor)
     )
   })
 
