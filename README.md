@@ -70,12 +70,12 @@ find (for each marker) a partition that minimizes the AOF. The greedy method is
 available using the `greedyCytometryAof` function. For example:
 
 ```r
-fcs_data <- read.csv("fcs_data.csv")
+fcs_data <- flowCore::read.FCS("fcs_data.fcs")
 # Load output of semi-supervised clustering method.
 y <- read.csv("clustering.csv")
 
 # Calculate AOF for CD3 using T cells versus non-T cells.
-x <- fcs_data[["CD3"]]
+x <- fcs_data@exprs[, "CD3"]
 t_cell_indices <- grep("t_cell", y)
 calculateAof(x, t_cell_indices)
 
