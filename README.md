@@ -81,5 +81,5 @@ calculateAof(x, t_cell_indices)
 
 # Use greedy search to optimize AOF for each channel.
 channel_names <- c("CD3", "CD19", "CD33", "CD56", "CD42")
-greedyCytometryAof(fcs_data, y, channel_names)
+greedyCytometryAof(fcs_data@exprs, y, channel_names)
 ```
