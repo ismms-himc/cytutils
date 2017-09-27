@@ -39,8 +39,12 @@ distributions. `calculateDrJsDivergence` calculates it between two matrices
 which are the result of dimensionality reduction. For example:
 
 ```r
-x <- read.csv("visne_map_1.csv")
-y <- read.csv("visne_map_2.csv")
+# Using the Cytobank default column names.
+tsne_column_names <- c("tsne1", "tsne2")
+x <- flowCore::read.FCS("x.fcs")
+x_mtx <- x@exprs[, tsne_column_names]
+y <- flowCore::read.FCS("y.fcs")
+y_mtx <- y@exprs[, tsne_column_names]
 
 calculateDrJsDivergence(x, y)
 ```
