@@ -35,18 +35,18 @@ Nat Biotechnol. 2013 Jun;31(6):545-52.
 [PubMedLink](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC4076922/)
 
 `calculateJsDivergence` calculates the JS divergence between two probability
-distributions. `calculateDrJsDivergence` calculates it between two matrices
+distributions. `calculate2dJsDivergence` calculates it between two matrices
 which are the result of dimensionality reduction. For example:
 
 ```r
 # Using the Cytobank default column names.
-tsne_column_names <- c("tsne1", "tsne2")
+tsne_column_names <- c("tSNE1", "tSNE2")
 x <- flowCore::read.FCS("x.fcs")
 x_mtx <- x@exprs[, tsne_column_names]
 y <- flowCore::read.FCS("y.fcs")
 y_mtx <- y@exprs[, tsne_column_names]
 
-calculateDrJsDivergence(x, y)
+calculate2dJsDivergence(x_mtx, y_mtx)
 ```
 
 ### Average Overlap Frequency

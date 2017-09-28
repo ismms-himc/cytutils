@@ -2,7 +2,7 @@
 
 export(.greedyChannelAof)
 export(calculateAof)
-export(calculateDrJsDivergence)
+export(calculate2dJsDivergence)
 export(calculateJsDivergence)
 export(greedyCytometryAof)
 import(MASS)

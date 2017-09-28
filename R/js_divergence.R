@@ -5,7 +5,7 @@
 #'
 #' @param p,q Numerical vectors representing the probability distributions.
 #' @return A numeric for the JS divergence between the vectors.
-#' @seealso \code{\link{calculateDrJsDivergence}}
+#' @seealso \code{\link{calculate2dJsDivergence}}
 #' @export
 calculateJsDivergence <- function(p, q) {
   # Verify that p and q are probability distributions.
@@ -51,7 +51,7 @@ calculateJsDivergence <- function(p, q) {
 #' @return A numeric for the JS divergence between the maps.
 #' @seealso \code{\link{calculateJsDivergence}}
 #' @export
-calculateDrJsDivergence <- function(x, y, n = 2 ^ 8) {
+calculate2dJsDivergence <- function(x, y, n = 2 ^ 8) {
   if (ncol(x) != 2) {
     stop("x should be a two-dimensional numeric matrix")
   }
