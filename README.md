@@ -12,7 +12,7 @@ github. You can use the `devtools` package to install it:
 ```r
 install.packages("devtools")
 library(devtools)
-install_github("dtelad11/cytutils")
+install_github("ismmshimc/cytutils")
 ```
 
 ## Available Methods
