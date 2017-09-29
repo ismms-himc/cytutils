@@ -8,7 +8,11 @@ generate2dJsDivergenceDataFrame(source_filepaths,
   two_d_map_column_names = c("tSNE1", "tSNE2"), n = 2^8)
 }
 \arguments{
-\item{x}{A vector containing the file paths for the data of interest.}
+\item{source_filepaths}{A vector containing the file paths for the data of interest.}
+
+\item{two_d_map_column_names}{A vector containing the column names of interest. Defaults to Cytobank's default tSNE column names.}
+
+\item{n}{Number of grid points for KDE.}
 }
 \value{
 A matrix that includes a numeric for the JS divergence between each 
