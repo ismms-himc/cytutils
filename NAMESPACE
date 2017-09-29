@@ -2,7 +2,8 @@
 
 export(.greedyChannelAof)
 export(calculateAof)
-export(calculate2dJsDivergence)
 export(calculateJsDivergence)
+export(generate2dJsDivergenceDataFrame)
 export(greedyCytometryAof)
 import(MASS)
+import(flowCore)
