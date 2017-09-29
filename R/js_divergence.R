@@ -95,6 +95,8 @@ generate2dJsDivergenceMatrix <- function(x, two_d_map_column_names = c("tSNE1", 
   # 4) return a matrix of divergences
   pair_divergences <- data.frame(matrix(ncol=3, nrow=0))
   colnames(pair_divergences) <- c('file1', 'file2', 'divergence_value')
-  
+  for (n in 1:num_pairs) {
+    
+  }
 }
 

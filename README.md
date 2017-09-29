@@ -34,20 +34,26 @@ dimensional single-cell data and reveals phenotypic heterogeneity of leukemia.
 Nat Biotechnol. 2013 Jun;31(6):545-52.
 [PubMedLink](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC4076922/)
 
-`calculateJsDivergence` calculates the JS divergence between two probability
-distributions. `calculate2dJsDivergence` calculates it between two matrices
-which are the result of dimensionality reduction. For example:
+`generate2dJsDivergenceDataFrame` accepts a list of source file paths as an argument 
+and calculates the JS divergence between every possible pair combination of
+two-dimensional matrices. The two-dimensional matrices are generated from the source 
+files and columns of interest (`two_d_map_column_names`). The matrices may or 
+may not be a result of dimensionality reduction. By default, 
+`two_d_map_column_names` is set to Cytobank's default tSNE column names.
 
 ```r
-# Using the Cytobank default column names.
-tsne_column_names <- c("tSNE1", "tSNE2")
-x <- flowCore::read.FCS("x.fcs")
-x_mtx <- x@exprs[, tsne_column_names]
-y <- flowCore::read.FCS("y.fcs")
-y_mtx <- y@exprs[, tsne_column_names]
-
-calculate2dJsDivergence(x_mtx, y_mtx)
+source_filepaths <- c("/path/to/abc.fcs", "/path/to/def.fcs", "/path/to/ghi.fcs")
+generate2dJsDivergenceDataFrame(source_filepaths, two_d_map_column_names = c("tSNE1", "tSNE2"))
 ```
+
+The function returns a data frame like the below:
+
+| file1 | file2 | divergence_value |
+| ------ | ------ |------ |
+| abc.fcs | def.fcs | 0.010899564 |
+| abc.fcs | ghi.fcs | 0.005387104 |
+| def.fcs | ghi.fcs | 0.051054440 |
+
 
 ### Average Overlap Frequency
 
