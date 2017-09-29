@@ -113,7 +113,6 @@ generate2dJsDivergenceDataFrame <- function(source_filepaths,
     df_1 = as.data.frame(two_d_maps[filename_1])
     df_2 = as.data.frame(two_d_maps[filename_2])
 
-    # TODO: does n change if non-default value added?
     divergence_value <- .calculate2dJsDivergence(df_1, df_2, n)
     new_row <- data.frame(file1 = filename_1, 
                           file2 = filename_2, 
