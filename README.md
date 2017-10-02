@@ -37,12 +37,11 @@ Nat Biotechnol. 2013 Jun;31(6):545-52.
 `generate2dJsDivergenceDataFrame` accepts a list of source file paths as an argument 
 and calculates the JS divergence between every possible pair combination of
 two-dimensional matrices. The two-dimensional matrices are generated from the source 
-files and columns of interest (`two_d_map_column_names`). The matrices may or 
-may not be a result of dimensionality reduction. By default, 
+files and columns of interest (`two_d_map_column_names`). While the matrices may be the result of dimensionality reduction this is not required. By default, 
 `two_d_map_column_names` is set to Cytobank's default tSNE column names.
 
 ```r
-source_filepaths <- c("/path/to/abc.fcs", "/path/to/def.fcs", "/path/to/ghi.fcs")
+source_filepaths <- c("/path/to/A.fcs", "/path/to/B.fcs", "/path/to/C.fcs")
 generate2dJsDivergenceDataFrame(source_filepaths, two_d_map_column_names = c("tSNE1", "tSNE2"))
 ```
 
@@ -50,9 +49,9 @@ The function returns a data frame like the below:
 
 | file1 | file2 | divergence_value |
 | ------ | ------ |------ |
-| abc.fcs | def.fcs | 0.010899564 |
-| abc.fcs | ghi.fcs | 0.005387104 |
-| def.fcs | ghi.fcs | 0.051054440 |
+| A.fcs | B.fcs | 0.010899564 |
+| A.fcs | C.fcs | 0.005387104 |
+| B.fcs | C.fcs | 0.051054440 |
 
 
 ### Average Overlap Frequency
