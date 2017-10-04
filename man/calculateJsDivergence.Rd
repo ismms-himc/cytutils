@@ -17,5 +17,5 @@ Given two probability distributions, calculate the Jensen-Shannon (JS)
 divergence between them.
 }
 \seealso{
-\code{\link{calculateDrJsDivergence}}
+\code{\link{generate2dJsDivergenceDataFrame}}
 }
