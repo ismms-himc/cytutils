@@ -76,11 +76,11 @@ available using the `greedyCytometryAof` function. For example:
 
 ```r
 fcs_data <- flowCore::read.FCS("fcs_data.fcs")
-# Load output of semi-supervised clustering method.
+# Load output of semi-supervised clustering method. y is a vector of assignments.
 y <- read.csv("clustering.csv")
 
-# Calculate AOF for CD3 using T cells versus non-T cells.
-x <- fcs_data@exprs[, "CD3"]
+# Calculate AOF for Er168Di (CD3) using T cells versus non-T cells.
+x <- fcs_data@exprs[, "Er168Di"]
 t_cell_indices <- grep("t_cell", y)
 calculateAof(x, t_cell_indices)
 
