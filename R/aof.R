@@ -49,6 +49,136 @@ calculateAof <- function(x, pos_indices, width = 0.05, cofactor = NULL) {
   mean(c(mean(pos <= neg_high), mean(neg >= pos_low)))
 }
 
+
+#' Read Samples File
+#'
+#' Read the samples CSV file. The file includes a row for every sample in the
+#' experiment. The first column is always sample_id, a unique sample ID. The
+#' second column, filename, contains the name of the "base" FCS file (i.e. the
+#' FCS file with data for all cells from the sample, regardless of manual gating
+#' population designation).
+
+#' Calculate the Average Overlap Frequency (AOF) for a single cytometry channel.
+#'
+#' @param samples_filepath Filepath of the samples csv file that outlines sample 
+#' IDs and corresponding FCS file paths.
+#' @return A data frame with the first column representing the sample_id and the
+#' second column representing the base FCS filename corresponding to that sample_id.
+.read_samples <- function(samples_filepath) {
+
+  if (!file.exists(samples_filepath)) {
+    stop(paste0("unable to find samples file ", samples_filepath))
+  }
+  
+  samples <- read.csv(samples_filepath,  stringsAsFactors = FALSE)
+  
+  if (colnames(samples)[1] != "sample_id") {
+    stop("first column of samples.csv should be sample_id")
+  }
+  
+  if (any(duplicated(samples$sample_id))) {
+    stop("sample_id should be unique")
+  }
+  
+  if (ncol(samples) == 1) {
+    stop("samples file includes no base FCS file designations")
+  }
+  
+  samples$sample_id <- as.character(samples$sample_id)
+  
+  samples
+}
+
+
+#' Import FCS File
+#'
+#' Load data from an FCS file and convert it to a data frame with column names
+#' set to a concatenation of fluorophore and marker.
+#'
+#' @param filepath Filepath of an FCS file. 
+#' @return A data frame with expression data from an FCS file. If return_original is
+#' true, the function will return the original flowFrame object in addition to the
+#' data frame.
+.fcs_import_file <- function(filepath,
+                            return_original = FALSE,
+                            transformation = TRUE) {
+  fcs_data <- flowCore::read.FCS(filepath, transformation)
+  data <- dplyr::as_data_frame(as.data.frame(fcs_data@exprs))
+  colnames(data) <- paste0(fcs_data@parameters@data$name, "_",
+                           fcs_data@parameters@data$desc)
+  # Rename columns to be R-friendly
+  colnames(data) <- gsub("-| |#", "_", colnames(data))
+  
+  if (return_original) {
+    list(
+      data = data,
+      obj = fcs_data
+    )
+  } else {
+    dplyr::as_data_frame(data)
+  }
+}
+
+
+#' Generate Population Assignments for Manually Gated Data
+#'
+#' Generate a list with keys representing sample IDs (ex: sample_1, sample_2).
+#' Values are data frames with columns representing cell populations (ex: 
+#' sample_1.basophil, sample_1.b_cell). Data frame cell values are booleans. 
+#'
+#' @param clustering_channels Vector containing clustering channels (ex: c("Er167Di_CCR7",
+#' "Er168Di_CD3"))
+#' @param manual_labeling_filepath Path to csv file with columns representing 
+#' sample_id, base, and manually gated populations. Each row contains
+#' a sample_id as well as the corresponding base FCS filename and FCS files for
+#' manually gating populations. Note: The base FCS file contains data for all 
+#' cells from the sample, regardless of manual gating population designation
+#' @param data_dir Path to directory containing all FCS files.
+#' @inheritParams .read_samples
+#' @return A list illustrating the relationships between specific samples, cells,
+#' and population assignments designated via manual gating. 
+#' @export
+
+generate_population_assignments <- function(clustering_channels, manual_labeling_filepath, samples_filepath, data_dir) {
+  manual_labeling <- read.csv(manual_labeling_filepath, stringsAsFactors = FALSE)
+  labels <- setdiff(names(manual_labeling), c("sample_id", "base"))
+  single_sample_analysis_labels <- list()
+  samples <- .read_samples(samples_filename)
+  sample_ids <- samples$sample_id
+
+  # Match manual gating labels to each sample.
+  single_sample_labels <- lapply(sample_ids, function(sample_id) {
+    cat(paste0(sample_id, "\n"))
+    
+    sample_labeling <- manual_labeling[manual_labeling$sample_id == sample_id, ]
+    sample_base <- sample_labeling$base
+    
+    base_fcs_data <- .fcs_import_file(file.path(data_dir, sample_base))
+
+    ssl <- lapply(labels, function(label) {
+      cat(paste0("\t", label, "\n"))
+      # Import FCS file for this label.
+      label_fcs_data <-
+        .fcs_import_file(file.path(data_dir, sample_labeling[[label]]))
+      label_fcs_data[[label]] <- TRUE
+      label_fcs_data_match <- 
+        dplyr::left_join(base_fcs_data, label_fcs_data, by = clustering_channels)
+      label_fcs_data_match[, label]
+    }) %>% dplyr::bind_cols()
+    
+    ssl[is.na(ssl)] <- FALSE
+    
+    # ssl is a data frame with column names representing different labels (cell 
+    # populations)
+    ssl
+  })
+
+  names(single_sample_labels) <- sample_ids
+
+  single_sample_labels
+}
+
+
 #' Greedy search for optimal Average Overlap Frequency (AOF) for one channel.
 #'
 #' Given a cytometry data matrix and its clustering scheme, use a greedy search
@@ -153,7 +283,8 @@ greedyCytometryAof <- function(fcs_data,
   # Run greedy algorithm over each channel.
   aof_values <- lapply(channel_names, function(channel_name) {
     if (verbose) message(channel_name)
-    x <- fcs_data[[channel_name]]
+    x <- fcs_data[, channel_name]
+
     data.frame(
       ChannelName = channel_name,
       Aof = .greedyChannelAof(x, y_indices, width = width, cofactor = cofactor)
