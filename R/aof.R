@@ -4,13 +4,14 @@
 #'
 #' @param x Numeric vector corresponding to one channel in cytometry data.
 #' @param pos_indices Indices of cells positive for this channel.
+#' @param neg_indices Indices of cells negative for this channel.
 #' @param width Width of high threshold of negative population and low
 #' threshold of positive population.
 #' @param cofactor If supplied, data will be transformed using inverse
 #' hyperbolic sin with given cofactor.
 #' @return The AOF between positive and negative populations for x.
 #' @export
-calculateAof <- function(x, pos_indices, width = 0.05, cofactor = NULL) {
+calculateAof <- function(x, pos_indices, neg_indices, width = 0.05, cofactor = NULL) {
   if (length(pos_indices) == 0) {
     stop("no cells in positive population")
   }
@@ -25,7 +26,6 @@ calculateAof <- function(x, pos_indices, width = 0.05, cofactor = NULL) {
 
   # Set up positive and negative populations.
   pos <- x[pos_indices]
-  neg_indices <- setdiff(seq_along(x), pos_indices)
   neg <- x[neg_indices]
 
   if (mean(pos) < mean(neg)) {
@@ -50,7 +50,7 @@ calculateAof <- function(x, pos_indices, width = 0.05, cofactor = NULL) {
 }
 
 
-#' Read Samples File
+#' Read samples file
 #'
 #' Read the samples CSV file. The file includes a row for every sample in the
 #' experiment. The first column is always sample_id, a unique sample ID. The
@@ -90,7 +90,7 @@ calculateAof <- function(x, pos_indices, width = 0.05, cofactor = NULL) {
 }
 
 
-#' Import FCS File
+#' Import FCS file
 #'
 #' Load data from an FCS file and convert it to a data frame with column names
 #' set to a concatenation of fluorophore and marker.
@@ -120,7 +120,7 @@ calculateAof <- function(x, pos_indices, width = 0.05, cofactor = NULL) {
 }
 
 
-#' Generate Population Assignments for Manually Gated Data
+#' Generate population assignments for manually gated data
 #'
 #' Generate a list with keys representing sample IDs (ex: sample_1, sample_2).
 #' Values are data frames with columns representing cell populations (ex: 
