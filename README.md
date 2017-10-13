@@ -76,7 +76,7 @@ find (for each marker) a partition that minimizes the AOF. The greedy method is
 available using the `greedyCytometryAof` function. For example:
 
 
-##### Generalized workflow:
+#### Generalized workflow:
 ```r
 fcs_data <- flowCore::read.FCS("fcs_data.fcs")
 # Load output of semi-supervised clustering method. y is a vector of assignments.
@@ -90,11 +90,12 @@ greedyCytometryAof(fcs_data@exprs, y, channel_names)
 # Calculate AOF for Er168Di (CD3) using T cells versus non-T cells.
 x <- fcs_data@exprs[, "Er168Di"]
 t_cell_indices <- grep("t_cell", y)
-calculateAof(x, t_cell_indices)
+non_t_cell_indices <- grep("t_cell", y, invert = TRUE)
+calculateAof(x, t_cell_indices, non_t_cell_indices)
 ```
 
 
-##### A possible workflow for when using manually gated data:
+#### A possible workflow for when using manually gated data:
 ```r
 # Use manually gated data to assign sample cells to specific populations
 sample_1_base_fcs_data <- flowCore::read.FCS("sample_1_base.fcs")
@@ -116,9 +117,9 @@ clustering_channels <- c( "Y89Di_CD45", "In113Di_CD57", "In115Di_CD11c",
   						"Ir191Di_DNA", "Os192Di_Osmium", "Bi209Di_CD11b")
 
 single_sample_labels <- generate_population_assignments(manual_labeling_filepath, 
-														samples_filepath, 
-														data_dir, 
-														clustering_channels)
+							samples_filepath, 
+							data_dir, 
+							clustering_channels)
 
 # Use greedy search to optimize AOF for each channel.
 channel_names <- c("Er168Di", "Nd142Di", "Gd158Di", "Dy161Di")
@@ -135,5 +136,6 @@ greedyCytometryAof(sample_1_base_fcs_data@exprs, y$sample_1$t_cell, channel_name
 x <- sample_1_base_fcs_data@exprs[, "Er168Di"]
 
 t_cell_indices <- grep(TRUE, y$sample_1$t_cell)
-calculateAof(x, t_cell_indices) # =>  0.5021151
+non_t_cell_indices <- grep(FALSE, y$sample_1$t_cell)
+calculateAof(x, t_cell_indices, non_t_cell_indices) # =>  0.5021151
 ```
