@@ -4,12 +4,14 @@
 \alias{calculateAof}
 \title{Average Overlap Frequency (AOF).}
 \usage{
-calculateAof(x, pos_indices, width = 0.05, cofactor = NULL)
+calculateAof(x, pos_indices, neg_indices, width = 0.05, cofactor = NULL)
 }
 \arguments{
 \item{x}{Numeric vector corresponding to one channel in cytometry data.}
 
 \item{pos_indices}{Indices of cells positive for this channel.}
+
+\item{neg_indices}{Indices of cells negative for this channel.}
 
 \item{width}{Width of high threshold of negative population and low
 threshold of positive population.}

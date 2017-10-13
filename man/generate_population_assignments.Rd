@@ -2,7 +2,7 @@
 % Please edit documentation in R/aof.R
 \name{generate_population_assignments}
 \alias{generate_population_assignments}
-\title{Generate Population Assignments for Manually Gated Data}
+\title{Generate population assignments for manually gated data}
 \usage{
 generate_population_assignments(clustering_channels, manual_labeling_filepath,
   samples_filepath, data_dir)
