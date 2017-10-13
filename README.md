@@ -109,7 +109,7 @@ clustering_channels <- c( "Y89Di_CD45", "In113Di_CD57", "In115Di_CD11c",
   						"Eu151Di_CD123", "Sm152Di_CD66b", "Eu153Di_PD_1",
   						"Sm154Di_CD86", "Gd155Di_CD27", "Gd156Di_CCR5",
   						"Gd158Di_CD33", "Tb159Di_CD24", "Gd160Di_CD14",
-  						"Dy161Di_CD56", "Dy162Di_CD169", "Dy163Di_CXCR5".
+  						"Dy161Di_CD56", "Dy162Di_CD169", "Dy163Di_CXCR5",
  						"Dy164Di_CD40", "Ho165Di_CCR6", "Er166Di_CD25",
   						"Er167Di_CCR7", "Er168Di_CD3", "Tm169Di_CX3CR1",
   						"Er170Di_CD38", "Yb171Di_CD161", "Yb172Di_CD209",

@@ -143,7 +143,7 @@ generate_population_assignments <- function(clustering_channels, manual_labeling
   manual_labeling <- read.csv(manual_labeling_filepath, stringsAsFactors = FALSE)
   labels <- setdiff(names(manual_labeling), c("sample_id", "base"))
   single_sample_analysis_labels <- list()
-  samples <- .read_samples(samples_filename)
+  samples <- .read_samples(samples_filepath)
   sample_ids <- samples$sample_id
 
   # Match manual gating labels to each sample.
