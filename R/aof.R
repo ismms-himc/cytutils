@@ -126,8 +126,6 @@ calculateAof <- function(x, pos_indices, neg_indices, width = 0.05, cofactor = N
 #' Values are data frames with columns representing cell populations (ex: 
 #' sample_1.basophil, sample_1.b_cell). Data frame cell values are booleans. 
 #'
-#' @param clustering_channels Vector containing clustering channels (ex: c("Er167Di_CCR7",
-#' "Er168Di_CD3"))
 #' @param manual_labeling_filepath Path to csv file with columns representing 
 #' sample_id, base, and manually gated populations. Each row contains
 #' a sample_id as well as the corresponding base FCS filename and FCS files for
@@ -140,7 +138,7 @@ calculateAof <- function(x, pos_indices, neg_indices, width = 0.05, cofactor = N
 #' @import dplyr
 #' @export
 
-generate_population_assignments <- function(manual_labeling_filepath, samples_filepath, data_dir) {
+generatePopulationAssignments <- function(manual_labeling_filepath, samples_filepath, data_dir) {
   manual_labeling <- read.csv(manual_labeling_filepath, stringsAsFactors = FALSE)
   labels <- setdiff(names(manual_labeling), c("sample_id", "base"))
   single_sample_analysis_labels <- list()

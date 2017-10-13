@@ -103,7 +103,7 @@ manual_labeling_filepath <- "/path/to/samples_manual_labeling.csv"
 samples_filepath <- "/path/to/samples.csv"
 data_dir <- "/path/to/fcs_files"
 
-single_sample_labels <- generate_population_assignments(
+single_sample_labels <- generatePopulationAssignments(
 							manual_labeling_filepath, 
 							samples_filepath, 
 							data_dir)
