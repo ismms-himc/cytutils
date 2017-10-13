@@ -137,9 +137,10 @@ calculateAof <- function(x, pos_indices, neg_indices, width = 0.05, cofactor = N
 #' @inheritParams .read_samples
 #' @return A list illustrating the relationships between specific samples, cells,
 #' and population assignments designated via manual gating. 
+#' @import dplyr
 #' @export
 
-generate_population_assignments <- function(clustering_channels, manual_labeling_filepath, samples_filepath, data_dir) {
+generate_population_assignments <- function(manual_labeling_filepath, samples_filepath, data_dir) {
   manual_labeling <- read.csv(manual_labeling_filepath, stringsAsFactors = FALSE)
   labels <- setdiff(names(manual_labeling), c("sample_id", "base"))
   single_sample_analysis_labels <- list()
@@ -153,7 +154,15 @@ generate_population_assignments <- function(clustering_channels, manual_labeling
     sample_labeling <- manual_labeling[manual_labeling$sample_id == sample_id, ]
     sample_base <- sample_labeling$base
     
+    # Generate vector of clustering channels from base FCS file.
     base_fcs_data <- .fcs_import_file(file.path(data_dir, sample_base))
+    base_fcs_data_cols <- colnames(base_fcs_data)
+    time_col_index <- grep("Time", base_fcs_data_cols)
+    time_col_name <- base_fcs_data_cols[time_col_index]
+    event_length_col_index <- grep("Event_length", base_fcs_data_cols)
+    event_length_col_name <- base_fcs_data_cols[event_length_col_index]
+    non_channel_cols <- c(time_col_name, event_length_col_name)
+    clustering_channels <- setdiff(base_fcs_data_cols, non_channel_cols)
 
     ssl <- lapply(labels, function(label) {
       cat(paste0("\t", label, "\n"))

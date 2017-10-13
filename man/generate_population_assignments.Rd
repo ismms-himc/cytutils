@@ -4,13 +4,10 @@
 \alias{generate_population_assignments}
 \title{Generate population assignments for manually gated data}
 \usage{
-generate_population_assignments(clustering_channels, manual_labeling_filepath,
-  samples_filepath, data_dir)
+generate_population_assignments(manual_labeling_filepath, samples_filepath,
+  data_dir)
 }
 \arguments{
-\item{clustering_channels}{Vector containing clustering channels (ex: c("Er167Di_CCR7",
-"Er168Di_CD3"))}
-
 \item{manual_labeling_filepath}{Path to csv file with columns representing 
 sample_id, base, and manually gated populations. Each row contains
 a sample_id as well as the corresponding base FCS filename and FCS files for
@@ -21,6 +18,9 @@ cells from the sample, regardless of manual gating population designation}
 IDs and corresponding FCS file paths.}
 
 \item{data_dir}{Path to directory containing all FCS files.}
+
+\item{clustering_channels}{Vector containing clustering channels (ex: c("Er167Di_CCR7",
+"Er168Di_CD3"))}
 }
 \value{
 A list illustrating the relationships between specific samples, cells,
