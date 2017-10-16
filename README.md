@@ -126,3 +126,34 @@ t_cell_indices <- grep(TRUE, y$sample_1$t_cell)
 non_t_cell_indices <- grep(FALSE, y$sample_1$t_cell)
 calculateAof(x, t_cell_indices, non_t_cell_indices) # =>  0.5021151
 ```
+
+#### Calculating AOF for multiple channels.
+```r
+# Use manually gated data to assign sample cells to specific populations
+sample_1_base_fcs_data <- flowCore::read.FCS("sample_1_base.fcs")
+manual_labeling_filepath <- "/path/to/samples_manual_labeling.csv"
+samples_filepath <- "/path/to/samples.csv"
+data_dir <- "/path/to/fcs_files"
+
+single_sample_labels <- generatePopulationAssignments(
+							manual_labeling_filepath, 
+							samples_filepath, 
+							data_dir)
+
+# Calculate AOF for Er168Di (CD3) and Nd142Di (TODO: add pop), designating positive
+# populations as _________ and negative populations as ____ for each channel.
+
+sample_1_base_fcs_data <- flowCore::read.FCS("sample_1_base.fcs")
+# The below is a csv with the first column representing channel names (i.e. Er168Di,
+# Nd142Di, etc.). Column names start with "channel", followed by cell population
+# names (i.e. "b_cell", "t_cell", etc.). Cell values are TRUE or FALSE.
+channel_population_relationships_filepath <- "channel_population_relationships.csv"
+sample_id <- "sample_1"
+
+calculateMultiChannelAof(channel_population_relationships_filepath, base_fcs_data_filepath, single_sample_labels, sample_id)
+
+#   ChannelName       Aof
+# 1     Er168Di 0.5021151
+# 2     Nd142Di 0.9013603
+
+```
