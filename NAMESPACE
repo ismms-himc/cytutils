@@ -3,6 +3,7 @@
 export(.greedyChannelAof)
 export(calculateAof)
 export(calculateJsDivergence)
+export(calculateMultiChannelAof)
 export(generate2dJsDivergenceDataFrame)
 export(generatePopulationAssignments)
 export(greedyCytometryAof)
