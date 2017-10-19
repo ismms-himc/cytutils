@@ -110,18 +110,36 @@ single_sample_labels <- generatePopulationAssignments(
 
 # Use greedy search to optimize AOF for each channel.
 channel_names <- c("Er168Di", "Nd142Di", "Gd158Di", "Dy161Di")
-y <- single_sample_labels["sample_1"] # Note: "sample_1" was a sample_id in our samples csv file.
-greedyCytometryAof(sample_1_base_fcs_data@exprs, y$sample_1$t_cell, channel_names) # =>
 
-#   ChannelName       Aof
-# 1     Er168Di 0.5021151
-# 2     Nd142Di 0.9013603
-# 3     Gd158Di 0.7125131
-# 4     Dy161Di 0.9019039
+# Load output of semi-supervised clustering method and generate a vector of assignments
+# (cell_assignments_ordered below).
+cell_assignments <- read.csv("cell_assignments.csv")
+index_label_pairs <- cell_assignments[c("Index", "Label")]
+expected_num_rows <- nrow(sample_1_base_fcs_data@exprs)
+
+# We find the indices that were not labeled and add them to our "Label" column 
+with a label of NA
+unlabeled_indices <- setdiff(1:expected_num_rows, index_label_pairs$Index)
+na_assignments <- rep(NA, length(unlabeled_indices))
+unlabeled_assignments <- data.frame(unlabeled_indices, na_assignments)
+colnames(unlabeled_assignments) <- c("Index", "NodLabel")
+
+index_label_pairs_complete <- rbind(index_label_pairs, unlabeled_assignments)
+index_label_pairs_ordered <- index_label_pairs_complete[order(index_label_pairs_complete$Index),]
+cell_assignments_ordered <- as.vector(index_label_pairs_ordered$Label)
+
+greedyCytometryAof(sample_1_base_fcs_data@exprs, cell_assignments_ordered, channel_names) # =>
+
+#  ChannelName        Aof
+# 1     Er168Di 0.45942729
+# 2     Nd142Di 0.09528135
+# 3     Gd158Di 0.32359932
+# 4     Dy161Di 0.73802856
 
 # Calculate AOF for Er168Di (CD3) using T cells versus non-T cells.
 x <- sample_1_base_fcs_data@exprs[, "Er168Di"]
 
+y <- single_sample_labels["sample_1"] # Note: "sample_1" was a sample_id in our samples csv file.
 t_cell_indices <- grep(TRUE, y$sample_1$t_cell)
 non_t_cell_indices <- grep(FALSE, y$sample_1$t_cell)
 calculateAof(x, t_cell_indices, non_t_cell_indices) # =>  0.5021151
@@ -140,13 +158,13 @@ single_sample_labels <- generatePopulationAssignments(
 							samples_filepath, 
 							data_dir)
 
-# Calculate AOF for Er168Di (CD3) and Nd142Di (TODO: add pop), designating positive
-# populations as _________ and negative populations as ____ for each channel.
+# Calculate AOF for Er168Di (CD3) and Nd142Di, designating positive and negative 
+# populations for each channel.
 
 sample_1_base_fcs_data <- flowCore::read.FCS("sample_1_base.fcs")
 # The below is a csv with the first column representing channel names (i.e. Er168Di,
 # Nd142Di, etc.). Column names start with "channel", followed by cell population
-# names (i.e. "b_cell", "t_cell", etc.). Cell values are TRUE or FALSE.
+# names (i.e. "b_cell", "t_cell", etc.). Cell values are TRUE, FALSE, or left empty. 
 channel_population_relationships_filepath <- "channel_population_relationships.csv"
 sample_id <- "sample_1"
 
