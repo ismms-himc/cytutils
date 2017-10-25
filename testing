@@ -246,8 +246,6 @@ iof_1_cd8_t_cells_neg_indices <- which(iof_1_cd8_t_cells %in% FALSE)
 
 cd8_t_cell_df <- data.frame(base_fcs_data@exprs[,"Er168Di"])
 
-# NEXT: add index col to data frame
-
 colnames(cd8_t_cell_df) <- "er168_exprs_values"
 index_vals <- 1:length(cd8_t_cell_df$er168_exprs_values)
 cd8_t_cell_df$index <- index_vals
@@ -277,3 +275,23 @@ cd8_t_cell_pos_df$t_cell_status <- "cd8_t_cell"
 
 cd4_and_cd_8_t_cells_df <- rbind(cd4_t_cell_pos_df, cd8_t_cell_pos_df)
 ggplot(cd4_and_cd_8_t_cells_df, aes(cd4_and_cd_8_t_cells_df$er168_exprs_values, fill = t_cell_status)) + geom_density(alpha = 0.2) + scale_x_log10()
+
+
+---------------------------
+
+## AOF BETWEEN B CELLS AND T CELLS
+x <- base_fcs_data@exprs[, "Er168Di"]
+test_calculateAof(x, t_cell_indices, b_cell_indices) #=> 0
+
+## PLOT B and T cells
+t_cell_pos_df <- data.frame(x[t_cell_indices])
+colnames(t_cell_pos_df) <- "er168_exprs_values"
+t_cell_pos_df$t_cell_status <- "t_cell"
+
+
+b_cell_pos_df <- data.frame(x[b_cell_indices])
+colnames(b_cell_pos_df) <- "er168_exprs_values"
+b_cell_pos_df$t_cell_status <- "b_cell"
+
+b_and_t_cells_df <- rbind(t_cell_pos_df, b_cell_pos_df)
+ggplot(b_and_t_cells_df, aes(b_and_t_cells_df$er168_exprs_values, fill = t_cell_status)) + geom_density(alpha = 0.2) + scale_x_log10()
