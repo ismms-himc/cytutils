@@ -13,7 +13,7 @@
 #' hyperbolic sin with given cofactor.
 #' @return The AOF between positive and negative populations for x.
 #' @export
-calculateAof <- function(x, pos_indices, neg_indices, width = 0.05, cofactor = NULL) {
+calculateAof <- function(x, pos_indices, neg_indices = setdiff(seq_along(x), pos_indices), width = 0.05, cofactor = NULL) {
  if (length(pos_indices) == 0) {
     stop("no cells in positive population")
   }
