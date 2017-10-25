@@ -423,7 +423,7 @@ calculateMultiChannelAof <- function(channel_population_relationships_filepath,
     # We remove indices that were already added to our pos_indices vector.
     neg_indices <- setdiff(neg_indices, pos_indices)
     
-    aof_for_current_channel <- calculateAof(x, pos_indices, neg_indices, cofactor)
+    aof_for_current_channel <- calculateAof(x, pos_indices, neg_indices, cofactor = cofactor)
     aof_results_row <- data.frame(channel, aof_for_current_channel)
     names(aof_results_row) <- c("Channel Name", "Aof")
 
