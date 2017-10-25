@@ -1,0 +1,279 @@
+cell_assignments.csv
+from singlets:
+- basophil
+- cd14_cd16_monocyte
+- cd14_monocyte
+- cd141_dc
+- cd16_monocyte
+- cd16hi_nk_cell
+- cd1c_dc
+- cd4_cd8_t_cell
+- cd4_t_cell
+- cd4neg_cd8neg_t_cell
+- cd56hi_nk_cell
+- cd8_t_cell
+- eosinophil
+- gd_t_cell
+- memory_b_cell
+- naive_b_cell
+- neutrophil
+- nkt_cell
+- pdc
+- plasmablast
+- transitional_b_cell
+
+from flowgate:
+- b_cell
+- basophil
+- granulocute
+- mdc
+- monocyte
+- nk_cell
+- pdc
+- t_cell
+
+from manual labeling csv:
+- basophil
+- b_cell
+- cd4_cd8_t_cell
+- cd4neg_cd8neg_t_cell
+- cd4_t_cell
+- cd8_t_cell
+- memory_b_cell
+- naive_b_cell
+- plasmablast
+- t_cell
+- transitional_b_cell
+- treg
+
+---------------------------------------
+
+library(flowCore)
+library(cytutils)
+
+GREEDY AOF:
+
+base_fcs_data <- flowCore::read.FCS("170203_IOF_1_1_singlets.fcs")
+manual_labeling_filepath <- "LabelCellsByManualGatingTest.manual_labeling.csv"
+samples_filepath <- "LabelCellsByManualGatingTest.csv"
+data_dir <- "~/himc/cytutils-test-files/test6"
+fcs_data <- flowCore::read.FCS("170203_IOF_1_1_singlets.fcs")
+
+single_sample_labels <- generatePopulationAssignments(
+              manual_labeling_filepath, 
+              samples_filepath, 
+              data_dir)
+
+channel_names <- c("Er168Di", "Nd142Di", "Gd158Di", "Dy161Di")
+cell_assignments <- read.csv("cell_assignments_singlets.csv")
+index_label_pairs <- cell_assignments[c("Index", "NodLabel")]
+expected_num_rows <- nrow(base_fcs_data@exprs)
+
+
+# We find the indices that were not labeled and add them to our "Label" column 
+# with a label of NA
+unlabeled_indices <- setdiff(1:expected_num_rows, index_label_pairs$Index)
+na_assignments <- rep(NA, length(unlabeled_indices))
+unlabeled_assignments <- data.frame(unlabeled_indices, na_assignments)
+colnames(unlabeled_assignments) <- c("Index", "NodLabel")
+
+
+index_label_pairs_complete <- rbind(index_label_pairs, unlabeled_assignments)
+index_label_pairs_ordered <- index_label_pairs_complete[order(index_label_pairs_complete$Index),]
+cell_assignments_ordered <- as.vector(index_label_pairs_ordered$NodLabel)
+
+greedyCytometryAof(base_fcs_data@exprs, cell_assignments_ordered, channel_names)
+Converting cluster assignments to indices vectors
+	Er168Di
+	Nd142Di
+	Gd158Di
+	Dy161Di
+  ChannelName        Aof
+1     Er168Di 0.45942729
+2     Nd142Di 0.09528135
+3     Gd158Di 0.32359932
+4     Dy161Di 0.73802856
+
+test_greedyCytometryAof(base_fcs_data@exprs, cell_assignments_ordered, channel_names)
+ChannelName        Aof
+1     Er168Di 0.43707295
+2     Nd142Di 0.01584683
+3     Gd158Di 0.01097876
+4     Dy161Di 0.58445013
+
+-----
+CALCULATE AOF
+
+x <- base_fcs_data@exprs[, "Er168Di"]
+y <- single_sample_labels["iof_1"]
+t_cell_indices <- grep(TRUE, y$iof_1$t_cell)
+non_t_cell_indices <- grep(FALSE, y$iof_1$t_cell)
+calculateAof(x, t_cell_indices, non_t_cell_indices) # =>  0.5021151
+test_calculateAof(x, t_cell_indices, non_t_cell_indices) # => 0.003321323
+
+-----
+
+CALCULATE AOF MULTIPLE CHANNELS
+
+base_fcs_data_filepath <- "170203_IOF_1_1_singlets.fcs"
+channel_population_relationships_filepath <- "channel_population_relationships.csv"
+sample_id <- "iof_1"
+
+calculateMultiChannelAof(channel_population_relationships_filepath, base_fcs_data_filepath, single_sample_labels, sample_id)
+  Channel Name Aof
+1      Er168Di 0.5
+
+test_calculateMultiChannelAof(channel_population_relationships_filepath, base_fcs_data_filepath, single_sample_labels, sample_id)
+
+
+
+----------
+
+AOF PLOT VISUALIZATION T CELLS
+library(ggplot2)
+
+iof_1_t_cells <- y$iof_1$t_cell
+er168_col <- base_fcs_data@exprs[,"Er168Di"]
+
+# Tcells
+iof_1_t_cells_pos_indices <- which(iof_1_t_cells %in% TRUE)
+iof_1_t_cells_neg_indices <- which(iof_1_t_cells %in% FALSE)
+
+t_cell_df <- data.frame(base_fcs_data@exprs[,"Er168Di"])
+colnames(t_cell_df) <- "er168_exprs_values"
+
+index_vals <- 1:length(t_cell_df$er168_exprs_values)
+t_cell_df$index <- index_vals
+t_cell_df$t_cell_status<-ifelse(t_cell_df$index %in% iof_1_t_cells_pos_indices,"t_cell","non_t_cell")
+
+
+ggplot(t_cell_df, aes(t_cell_df$er168_exprs_values, fill = t_cell_status)) + geom_density(alpha = 0.2)
+# Log helps us remove distortion caused by zeros seen above
+ggplot(t_cell_df, aes(t_cell_df$er168_exprs_values, fill = t_cell_status)) + geom_density(alpha = 0.2) + scale_x_log10()
+
+
+-----------------------------------------
+
+B CELL AOF CALCULATIONS
+
+
+CALCULATE AOF
+
+b_cell_indices <- grep(TRUE, y$iof_1$b_cell)
+non_b_cell_indices <- grep(FALSE, y$iof_1$b_cell)
+calculateAof(x, b_cell_indices, non_b_cell_indices) # => 
+
+Error in calculateAof(x, b_cell_indices, non_b_cell_indices) : 
+  positive population mean is lower than negative population mean
+
+---------------------
+AOF PLOT VISUALIZATION B CELLS
+
+library(ggplot2)
+
+iof_1_b_cells <- y$iof_1$b_cell
+er168_col <- base_fcs_data@exprs[,"Er168Di"]
+
+# Bcells
+iof_1_b_cells_pos_indices <- which(iof_1_b_cells %in% TRUE)
+iof_1_b_cells_neg_indices <- which(iof_1_b_cells %in% FALSE)
+
+b_cell_df <- data.frame(base_fcs_data@exprs[,"Er168Di"])
+
+
+colnames(b_cell_df) <- "er168_exprs_values"
+
+index_vals <- 1:length(b_cell_df$er168_exprs_values)
+b_cell_df$index <- index_vals
+b_cell_df$b_cell_status<-ifelse(b_cell_df$index %in% iof_1_b_cells_pos_indices,"b_cell","non_b_cell")
+
+ggplot(b_cell_df, aes(b_cell_df$er168_exprs_values, fill = b_cell_status)) + geom_density(alpha = 0.2)
+# Log helps us remove distortion caused by zeros seen above
+ggplot(b_cell_df, aes(b_cell_df$er168_exprs_values, fill = b_cell_status)) + geom_density(alpha = 0.2) + scale_x_log10()
+
+-----------------------------
+
+CD4 T Cell Calculations
+x <- base_fcs_data@exprs[, "Er168Di"]
+y <- single_sample_labels["iof_1"]
+cd4_t_cell_indices <- grep(TRUE, y$iof_1$cd4_t_cell)
+non_cd4_t_cell_indices <- grep(FALSE, y$iof_1$cd4_t_cell)
+calculateAof(x, cd4_t_cell_indices, non_cd4_t_cell_indices) # => 0.6191803
+test_calculateAof(x, cd4_t_cell_indices, non_cd4_t_cell_indices) # =>  0.6557059
+
+---------------------------------------
+CD8 T Cell Calculations
+x <- base_fcs_data@exprs[, "Er168Di"]
+y <- single_sample_labels["iof_1"]
+cd8_t_cell_indices <- grep(TRUE, y$iof_1$cd8_t_cell)
+non_cd8_t_cell_indices <- grep(FALSE, y$iof_1$cd8_t_cell)
+calculateAof(x, cd8_t_cell_indices, non_cd8_t_cell_indices) # => 0.7079536
+test_calculateAof(x, cd8_t_cell_indices, non_cd8_t_cell_indices) # =>  0.7056994
+
+---------------------------------------
+AOF PLOT VISUALIZATION CD4 T CELLS
+library(ggplot2)
+
+iof_1_cd4_t_cells <- y$iof_1$cd4_t_cell
+er168_col <- base_fcs_data@exprs[,"Er168Di"]
+
+# Tcells
+iof_1_cd4_t_cells_pos_indices <- which(iof_1_cd4_t_cells %in% TRUE)
+iof_1_cd4_t_cells_neg_indices <- which(iof_1_cd4_t_cells %in% FALSE)
+
+cd4_t_cell_df <- data.frame(base_fcs_data@exprs[,"Er168Di"])
+
+colnames(cd4_t_cell_df) <- "er168_exprs_values"
+index_vals <- 1:length(cd4_t_cell_df$er168_exprs_values)
+cd4_t_cell_df$index <- index_vals
+
+cd4_t_cell_df$t_cell_status<-ifelse(cd4_t_cell_df$index %in% iof_1_cd4_t_cells_pos_indices,"cd4_t_cell","non_cd4_t_cell")
+
+ggplot(cd4_t_cell_df, aes(cd4_t_cell_df$er168_exprs_values, fill = cd4_t_cell_status)) + geom_density(alpha = 0.2)
+# Log helps us remove distortion caused by zeros seen above
+ggplot(cd4_t_cell_df, aes(cd4_t_cell_df$er168_exprs_values, fill = cd4_t_cell_status)) + geom_density(alpha = 0.2) + scale_x_log10()
+
+---------------------------------------
+AOF PLOT VISUALIZATION CD8 T CELLS
+library(ggplot2)
+
+iof_1_cd8_t_cells <- y$iof_1$cd8_t_cell
+er168_col <- base_fcs_data@exprs[,"Er168Di"]
+
+# Tcells
+iof_1_cd8_t_cells_pos_indices <- which(iof_1_cd8_t_cells %in% TRUE)
+iof_1_cd8_t_cells_neg_indices <- which(iof_1_cd8_t_cells %in% FALSE)
+
+cd8_t_cell_df <- data.frame(base_fcs_data@exprs[,"Er168Di"])
+
+# NEXT: add index col to data frame
+
+colnames(cd8_t_cell_df) <- "er168_exprs_values"
+index_vals <- 1:length(cd8_t_cell_df$er168_exprs_values)
+cd8_t_cell_df$index <- index_vals
+
+cd8_t_cell_df$t_cell_status<-ifelse(cd8_t_cell_df$index %in% iof_1_cd8_t_cells_pos_indices,"cd8_t_cell","non_cd8_t_cell")
+
+ggplot(cd8_t_cell_df, aes(cd8_t_cell_df$er168_exprs_values, fill = cd8_t_cell_status)) + geom_density(alpha = 0.2)
+# Log helps us remove distortion caused by zeros seen above
+ggplot(cd8_t_cell_df, aes(cd8_t_cell_df$er168_exprs_values, fill = cd8_t_cell_status)) + geom_density(alpha = 0.2) + scale_x_log10()
+
+---------------------------
+
+## AOF BETWEEN CD4+ and CD8+ t cells
+
+x <- base_fcs_data@exprs[, "Er168Di"]
+test_calculateAof(x, cd4_t_cell_indices, cd8_t_cell_indices) #=> 0.87
+
+## PLOT CD4+ and CD8+ t cells
+cd4_t_cell_pos_df <- data.frame(x[iof_1_cd4_t_cells_pos_indices])
+colnames(cd4_t_cell_pos_df) <- "er168_exprs_values"
+cd4_t_cell_pos_df$t_cell_status <- "cd4_t_cell"
+
+
+cd8_t_cell_pos_df <- data.frame(x[iof_1_cd8_t_cells_pos_indices])
+colnames(cd8_t_cell_pos_df) <- "er168_exprs_values"
+cd8_t_cell_pos_df$t_cell_status <- "cd8_t_cell"
+
+cd4_and_cd_8_t_cells_df <- rbind(cd4_t_cell_pos_df, cd8_t_cell_pos_df)
+ggplot(cd4_and_cd_8_t_cells_df, aes(cd4_and_cd_8_t_cells_df$er168_exprs_values, fill = t_cell_status)) + geom_density(alpha = 0.2) + scale_x_log10()
