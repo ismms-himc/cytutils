@@ -150,7 +150,6 @@ calculateAof(x, t_cell_indices, non_t_cell_indices, cofactor = 5) # =>  0.003321
 #### Calculating AOF for multiple channels.
 ```r
 # Use manually gated data to assign sample cells to specific populations
-sample_1_base_fcs_data <- flowCore::read.FCS("sample_1_base.fcs")
 manual_labeling_filepath <- "/path/to/samples_manual_labeling.csv"
 samples_filepath <- "/path/to/samples.csv"
 data_dir <- "/path/to/fcs_files"
@@ -163,7 +162,6 @@ single_sample_labels <- generatePopulationAssignments(
 # Calculate AOF for Er168Di (CD3) and Nd142Di, designating positive and negative 
 # populations for each channel.
 
-sample_1_base_fcs_data <- flowCore::read.FCS("sample_1_base.fcs")
 # The below is a csv with the first column representing channel names (i.e. Er168Di,
 # Nd142Di, etc.). Column names start with "channel", followed by cell population
 # names (i.e. "b_cell", "t_cell", etc.). Cell values are TRUE, FALSE, or left empty. 
