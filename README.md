@@ -93,8 +93,7 @@ t_cell_indices <- grep("t_cell", y)
 non_t_cell_indices <- grep("t_cell", y, invert = TRUE)
 # Note: Entering a cofactor will result in data being transformed. If x has not 
 # yet been transformed, a cofactor should be provided to the function below.
-cofactor <- 5
-calculateAof(x, t_cell_indices, non_t_cell_indices, cofactor)
+calculateAof(x, t_cell_indices, non_t_cell_indices, cofactor = 5)
 ```
 
 
@@ -121,7 +120,7 @@ index_label_pairs <- cell_assignments[c("Index", "Label")]
 expected_num_rows <- nrow(sample_1_base_fcs_data@exprs)
 
 # We find the indices that were not labeled and add them to our "Label" column 
-with a label of NA
+# with a label of NA
 unlabeled_indices <- setdiff(1:expected_num_rows, index_label_pairs$Index)
 na_assignments <- rep(NA, length(unlabeled_indices))
 unlabeled_assignments <- data.frame(unlabeled_indices, na_assignments)
@@ -130,9 +129,8 @@ colnames(unlabeled_assignments) <- c("Index", "Label")
 index_label_pairs_complete <- rbind(index_label_pairs, unlabeled_assignments)
 index_label_pairs_ordered <- index_label_pairs_complete[order(index_label_pairs_complete$Index),]
 cell_assignments_ordered <- as.vector(index_label_pairs_ordered$Label)
-cofactor <- 5
 
-greedyCytometryAof(sample_1_base_fcs_data@exprs, cell_assignments_ordered, channel_names, cofactor) # =>
+greedyCytometryAof(sample_1_base_fcs_data@exprs, cell_assignments_ordered, channel_names, cofactor = 5) # =>
 
 #  ChannelName        Aof
 # 1     Er168Di 0.050136740
@@ -146,8 +144,7 @@ x <- sample_1_base_fcs_data@exprs[, "Er168Di"]
 y <- single_sample_labels["sample_1"] # Note: "sample_1" was a sample_id in our samples csv file.
 t_cell_indices <- grep(TRUE, y$sample_1$t_cell)
 non_t_cell_indices <- grep(FALSE, y$sample_1$t_cell)
-cofactor <- 5
-calculateAof(x, t_cell_indices, non_t_cell_indices) # =>  0.003321323
+calculateAof(x, t_cell_indices, non_t_cell_indices, cofactor = 5) # =>  0.003321323
 ```
 
 #### Calculating AOF for multiple channels.
@@ -173,13 +170,12 @@ sample_1_base_fcs_data <- flowCore::read.FCS("sample_1_base.fcs")
 channel_population_relationships_filepath <- "channel_population_relationships.csv"
 sample_id <- "sample_1"
 base_fcs_data_filepath <- "/path/to/base_fcs_data.fcs"
-cofactor <- 5
 
 calculateMultiChannelAof(channel_population_relationships_filepath, 
 						base_fcs_data_filepath, 
 						single_sample_labels, 
 						sample_id,
-						cofactor)
+						cofactor = 5)
 
 #   ChannelName       Aof
 # 1     Er168Di 0.050136740
