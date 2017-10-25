@@ -2,7 +2,9 @@
 #'
 #' Calculate the Average Overlap Frequency (AOF) for a single cytometry channel.
 #'
-#' @param x Numeric vector corresponding to one channel in cytometry data.
+#' @param x Numeric vector corresponding to one channel in cytometry data. Data
+#' should be transformed. If not, entering a cofactor will result in data being 
+#' transformed
 #' @param pos_indices Indices of cells positive for this channel.
 #' @param neg_indices Indices of cells negative for this channel.
 #' @param width Width of high threshold of negative population and low
@@ -12,17 +14,27 @@
 #' @return The AOF between positive and negative populations for x.
 #' @export
 calculateAof <- function(x, pos_indices, neg_indices, width = 0.05, cofactor = NULL) {
-  if (length(pos_indices) == 0) {
+ if (length(pos_indices) == 0) {
     stop("no cells in positive population")
   }
-  if (length(pos_indices) == length(x)) {
+
+  if (length(neg_indices) == 0) {
     stop("no cells in negative population")
   }
+
   if (max(pos_indices) > length(x)) {
     stop("positive population indices include values higher than length of x")
   }
+  
+  if (anyNA(x)) {
+    stop("cytometry data should not include any missing entries")
+  }
 
   if (!is.null(cofactor)) x <- asinh(x / cofactor)
+
+  if (any(x > 10)) {
+    warning("ensure cytometry data has been transformed")
+  }
 
   # Set up positive and negative populations.
   pos <- x[pos_indices]
@@ -48,7 +60,6 @@ calculateAof <- function(x, pos_indices, neg_indices, width = 0.05, cofactor = N
   # Calculate AOF.
   mean(c(mean(pos <= neg_high), mean(neg >= pos_low)))
 }
-
 
 #' Read samples file
 #'
@@ -353,11 +364,19 @@ greedyCytometryAof <- function(fcs_data,
 #' @param single_sample_labels A list illustrating the relationships between 
 #' specific samples, cells, and population assignments designated via manual 
 #' gating. This can be generated via the `generatePopulationAssignments` function.
+#' @param sample_id A string representing the sample ID of interest. sample_id
+#' should correspond to a key in the single_sample_labels list.
+#' @param cofactor If supplied, data will be transformed using inverse
+#' hyperbolic sin with given cofactor.
 #' @return A data frame with AOF values for each channel of interest, as denoted
 #' by the channel_population_relationships csv file.
 #' @export
 
-calculateMultiChannelAof <- function(channel_population_relationships_filepath, base_fcs_data_filepath, single_sample_labels, sample_id) {
+calculateMultiChannelAof <- function(channel_population_relationships_filepath, 
+                                      base_fcs_data_filepath, 
+                                      single_sample_labels, 
+                                      sample_id, 
+                                      cofactor = NULL) {
 
   channel_population_relationships <- .readChannelPopulationRelationships(channel_population_relationships_filepath)
   channels <- channel_population_relationships$channel
@@ -369,8 +388,7 @@ calculateMultiChannelAof <- function(channel_population_relationships_filepath, 
   y <- data.frame(y, stringsAsFactors = FALSE)
 
   aof_results <- data.frame(matrix(ncol = 2, nrow = 0), stringsAsFactors = FALSE)
-  aof_results_colnames <- c("Channel Name", "Aof")
-  colnames(aof_results) <- aof_results_colnames
+  colnames(aof_results) <- c("Channel Name", "Aof")
 
   i <- 1
   for (channel in channels) {
@@ -405,7 +423,7 @@ calculateMultiChannelAof <- function(channel_population_relationships_filepath, 
     # We remove indices that were already added to our pos_indices vector.
     neg_indices <- setdiff(neg_indices, pos_indices)
     
-    aof_for_current_channel <- calculateAof(x, pos_indices, neg_indices)
+    aof_for_current_channel <- calculateAof(x, pos_indices, neg_indices, cofactor)
     aof_results_row <- data.frame(channel, aof_for_current_channel)
     names(aof_results_row) <- c("Channel Name", "Aof")
 
