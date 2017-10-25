@@ -7,7 +7,9 @@
 calculateAof(x, pos_indices, neg_indices, width = 0.05, cofactor = NULL)
 }
 \arguments{
-\item{x}{Numeric vector corresponding to one channel in cytometry data.}
+\item{x}{Numeric vector corresponding to one channel in cytometry data. Data
+should be transformed. If not, entering a cofactor will result in data being 
+transformed}
 
 \item{pos_indices}{Indices of cells positive for this channel.}
 

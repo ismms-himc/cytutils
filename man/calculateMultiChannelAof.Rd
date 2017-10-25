@@ -5,7 +5,7 @@
 \title{Calculate Average Overlap Frequency (AOF) for multiple channels of interest.}
 \usage{
 calculateMultiChannelAof(channel_population_relationships_filepath,
-  base_fcs_data_filepath, single_sample_labels, sample_id)
+  base_fcs_data_filepath, single_sample_labels, sample_id, cofactor = NULL)
 }
 \arguments{
 \item{channel_population_relationships_filepath}{Filepath of the channel 
@@ -21,6 +21,12 @@ population designation.}
 \item{single_sample_labels}{A list illustrating the relationships between 
 specific samples, cells, and population assignments designated via manual 
 gating. This can be generated via the `generatePopulationAssignments` function.}
+
+\item{sample_id}{A string representing the sample ID of interest. sample_id
+should correspond to a key in the single_sample_labels list.}
+
+\item{cofactor}{If supplied, data will be transformed using inverse
+hyperbolic sin with given cofactor.}
 }
 \value{
 A data frame with AOF values for each channel of interest, as denoted
