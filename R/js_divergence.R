@@ -30,7 +30,7 @@ calculateJsDivergence <- function(p, q) {
 #' @param n Number of grid points for KDE.
 #' @param lims The limits of the rectangle covered by the KDE.
 #' @return A one-dimensional numeric vector for the probability density.
-#' @import MASS
+#' @importFrom MASS kde2d
 .calculateMatrixKde <- function(mtx, n = 25, lims = NULL) {
   if (is.null(lims)) {
     stop("Kernel density estimation limits parameter is missing")
