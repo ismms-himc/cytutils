@@ -4,7 +4,8 @@
 \alias{calculateAof}
 \title{Average Overlap Frequency (AOF).}
 \usage{
-calculateAof(x, pos_indices, neg_indices, width = 0.05, cofactor = NULL)
+calculateAof(x, pos_indices, neg_indices = setdiff(seq_along(x), pos_indices),
+  width = 0.05, cofactor = NULL)
 }
 \arguments{
 \item{x}{Numeric vector corresponding to one channel in cytometry data. Data

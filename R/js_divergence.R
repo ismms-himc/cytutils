@@ -30,7 +30,7 @@ calculateJsDivergence <- function(p, q) {
 #' @param n Number of grid points for KDE.
 #' @param lims The limits of the rectangle covered by the KDE.
 #' @return A one-dimensional numeric vector for the probability density.
-#' @import MASS
+#' @importFrom MASS kde2d
 .calculateMatrixKde <- function(mtx, n = 25, lims = NULL) {
   if (is.null(lims)) {
     stop("Kernel density estimation limits parameter is missing")
@@ -51,7 +51,8 @@ calculateJsDivergence <- function(p, q) {
 #' @inheritParams .calculateMatrixKde
 #' @return A numeric for the JS divergence between the maps.
 #' @seealso \code{\link{calculateJsDivergence}}
-.calculate2dJsDivergence <- function(x, y, n) {
+#' @export
+calculate2dJsDivergence <- function(x, y, n = 2 ^ 8) {
   # Use range over combined data as KDE limits.
   lims <- c(range(c(x[, 1], y[, 1])), range(c(x[, 2], y[, 2])))
   # Convert matrices to probability distributions.
@@ -117,7 +118,7 @@ generate2dJsDivergenceDataFrame <- function(source_filepaths,
     df_1 = as.data.frame(two_d_maps[filename_1])
     df_2 = as.data.frame(two_d_maps[filename_2])
 
-    divergence_value <- .calculate2dJsDivergence(df_1, df_2, n)
+    divergence_value <- calculate2dJsDivergence(df_1, df_2, n)
     new_row <- data.frame(file1 = filename_1, 
                           file2 = filename_2, 
                           divergence_value = divergence_value) 
