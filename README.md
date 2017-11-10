@@ -77,6 +77,9 @@ Export done
 There were 50 or more warnings (use warnings() to see the first 50)
 ```
 
+*(Please disregard the warnings, these are generated since flowCore's
+`write.FCS` is still considered experimental.)*
+
 The script will import each FCS file, rename the relevant channels, and export
 a new FCS file under the `/channel_rename/` directory. In order to avoid
 accidentally overwriting the original FCS files, the new files will have the
