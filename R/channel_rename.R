@@ -38,7 +38,7 @@ channelRename <- function(path, verbose = TRUE) {
     if (verbose) {
       message(paste0(
         "channel_rename.csv created. Update the file and re-run channelRename ",
-        " to export new FCS files"
+        "to export new FCS files"
       ))
     }
   }
