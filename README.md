@@ -53,12 +53,13 @@ description) will have a row in this file.
 
 The file includes six columns. The first three (`mass`, `name`, and `desc`) are
 the existing channels. The next column, `dup`, is `TRUE` if this mass is 
-duplicated across files -- at least two files have this mass, but they have
-different name or description. The final two columns, `new_name` and `new_desc`,
-are initially identical to `name` and `desc`. These are the columns that will
-be used for renaming.
+duplicated across files -- at least two files have this mass, but the respective
+channels have different name or description. This column is supplied to help you
+find channels that might have been named differently.
 
-Set the `new_name` and `new_desc` according to the values you want. Download
+The final two columns, `new_name` and `new_desc`, are initially identical to
+`name` and `desc`. These are the columns that will be used for renaming. Set the
+`new_name` and `new_desc` according to the values you want. Download
 [`channel_rename.csv`](examples/channel_rename.csv) for one suggestion. Then,
 run the script again (keep the same CSV file name!):
 
