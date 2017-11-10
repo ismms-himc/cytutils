@@ -55,13 +55,14 @@ The file includes six columns. The first three (`mass`, `name`, and `desc`) are
 the existing channels. The next column, `dup`, is `TRUE` if this mass is 
 duplicated across files -- at least two files have this mass, but the respective
 channels have different name or description. This column is supplied to help you
-find channels that might have been named differently.
+find channels that might have been named differently, and does not affect the
+operation of the follow-up step.
 
 The final two columns, `new_name` and `new_desc`, are initially identical to
 `name` and `desc`. These are the columns that will be used for renaming. Set the
-`new_name` and `new_desc` according to the values you want. Download
+`new_name` and `new_desc` according to the new values you want. Download
 [`channel_rename.csv`](examples/channel_rename.csv) for one suggestion. Then,
-run the script again (keep the same CSV file name!):
+run the script again (do not rename `channel_rename.csv`!):
 
 ```{r}
 > cytutils::channelRename("D:/data/lavin")
@@ -79,8 +80,8 @@ Export done
 There were 50 or more warnings (use warnings() to see the first 50)
 ```
 
-*(Please disregard the warnings, these are generated since flowCore's
-`write.FCS` is still considered experimental.)*
+*(Please disregard the warnings. They are generated due to flowCore's
+`write.FCS` still being considered "experimental".)*
 
 The script will import each FCS file, rename the relevant channels, and export
 a new FCS file under the `/channel_rename/` directory. In order to avoid
@@ -90,8 +91,8 @@ accidentally overwriting the original FCS files, the new files will have the
 We would like to thank cytoforum for the [thread that inspired this feature](http://cytoforum.stanford.edu/viewtopic.php?f=3&t=874#p2536).
 
 > The package also includes `importChannelNames` and `renameFcsFileChannels`
-> which decouple the process and provide the user with more control over the
-> implementation details. Read the relevant documentation for more details.
+> which decouple the two steps and provide the user with more control over the
+> implementation. Read the relevant documentation for more details.
 
 ### Jensen-Shannon Divergence
 
