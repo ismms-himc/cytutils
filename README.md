@@ -21,7 +21,7 @@ install_github("ismmshimc/cytutils")
 
 TODO
 
-This facility was inspired by [http://cytoforum.stanford.edu/viewtopic.php?f=3&t=874#p2536](a cytoforum post).
+We would like to thank cytoforum for the [thread that inspired this feature](http://cytoforum.stanford.edu/viewtopic.php?f=3&t=874#p2536).
 
 ### Jensen-Shannon Divergence
 
