@@ -17,6 +17,12 @@ install_github("ismmshimc/cytutils")
 
 ## Available Methods
 
+### FCS Channel Renaming
+
+TODO
+
+This facility was inspired by [http://cytoforum.stanford.edu/viewtopic.php?f=3&t=874#p2536](a cytoforum post).
+
 ### Jensen-Shannon Divergence
 
 The [Jensen-Shannon (JS) divergence](https://en.wikipedia.org/wiki/Jensen%E2%80%93Shannon_divergence)
