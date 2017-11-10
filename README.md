@@ -29,7 +29,7 @@ The current version of the method is a two-step process. We are going to use the
 data from [Lavin et al., 2017](https://www.ncbi.nlm.nih.gov/pubmed/28475900) as
 an example. If you would like to follow this example, you are welcome to
 [download the data from FlowRepository](https://flowrepository.org/id/FR-FCM-ZY9N).
-We assume that the FCS files have been unzipped to "D:/data/lavin".
+We assume that the FCS files have been unzipped to `D:/data/lavin`.
 
 Once you have the FCS files unzipped, first run the script to generate a
 `channel_rename.csv` CSV file:
