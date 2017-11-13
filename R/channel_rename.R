@@ -3,7 +3,7 @@
 #' A two-step utility for renaming FCS channel names and descriptions. This is
 #' useful for situations where channels were misnamed across acquisitions (for
 #' example, naming a channel CD8 in one sample and CD8a in another). See the
-#' online documentation at TODO for instructions.
+#' Readme at "FCS Channel Renaming" for instructions.
 #'
 #' @param path Directory where FCS files are located.
 #' @param verbose If TRUE, script will report progress to console.
