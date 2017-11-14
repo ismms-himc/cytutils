@@ -105,7 +105,9 @@ renameFcsFileChannels <- function(dest_path,
   # Only keep channels that require changes.
   channels <-
     channels[channels$name != channels$new_name |
-               channels$desc != channels$new_desc, ]
+              (is.na(channels$name) & !(is.na(channels$new_name))) |
+               channels$desc != channels$new_desc |
+               (is.na(channels$desc) & !(is.na(channels$new_desc))), ]
 
   # Fix each file in turn.
   for (filename in filenames) {
