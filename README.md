@@ -17,6 +17,83 @@ install_github("ismmshimc/cytutils")
 
 ## Available Methods
 
+### FCS Channel Renaming
+
+The FCS channel renaming script allows you to easily rename channel names or
+descriptions over a large set of FCS files. The main motivation are instances
+where some files have mismatching descriptions. For example, naming a channel
+CD8 in some samples and CD8a in others, or Nd142 (marker channel) and Ce142
+(bead channel).
+
+The current version of the method is a two-step process. We are going to use the
+data from [Lavin et al., 2017](https://www.ncbi.nlm.nih.gov/pubmed/28475900) as
+an example. If you would like to follow this example, you are welcome to
+[download the data from FlowRepository](https://flowrepository.org/id/FR-FCM-ZY9N).
+We assume that the FCS files have been unzipped to `D:/data/lavin`.
+
+Once you have the FCS files unzipped, first run the script to generate a
+`channel_rename.csv` CSV file:
+
+```{r}
+> cytutils::channelRename("D:/data/lavin")
+Generating a new channel_rename.csv file
+	D:/data/lavin/245_myeloid_blood.fcs
+	D:/data/lavin/245_myeloid_lung.fcs
+	D:/data/lavin/245_myeloid_tumor.fcs
+	.
+	.
+	.
+channel_rename.csv created. Update the file and re-run channelRename to export new FCS files
+```
+
+This will result in a [`channel_rename.csv`](examples/channel_rename_original.csv)
+file, which includes channel information from all of the FCS files in the target
+directory. In other words, each unique channel (combination of mass, name, and
+description) will have a row in this file.
+
+The file includes six columns. The first three (`mass`, `name`, and `desc`) are
+the existing channels. The next column, `dup`, is `TRUE` if this mass is 
+duplicated across files -- at least two files have this mass, but the respective
+channels have different name or description. This column is supplied to help you
+find channels that might have been named differently, and does not affect the
+operation of the follow-up step.
+
+The final two columns, `new_name` and `new_desc`, are initially identical to
+`name` and `desc`. These are the columns that will be used for renaming. Set the
+`new_name` and `new_desc` according to the new values you want. Download
+[`channel_rename.csv`](examples/channel_rename.csv) for one suggestion. Then,
+run the script again (do not rename `channel_rename.csv`!):
+
+```{r}
+> cytutils::channelRename("D:/data/lavin")
+Importing channel_rename.csv and exporting new FCS files
+	D:/data/lavin/245_myeloid_blood.fcs
+	--> D:/data/lavin/channel_rename/245_myeloid_blood.fcs.renamed.fcs
+	D:/data/lavin/245_myeloid_lung.fcs
+	--> D:/data/lavin/channel_rename/245_myeloid_lung.fcs.renamed.fcs
+	D:/data/lavin/245_myeloid_tumor.fcs
+	--> D:/data/lavin/channel_rename/245_myeloid_tumor.fcs.renamed.fcs
+	.
+	.
+	.
+Export done
+There were 50 or more warnings (use warnings() to see the first 50)
+```
+
+*(Please disregard the warnings. They are generated due to flowCore's
+`write.FCS` still being considered "experimental".)*
+
+The script will import each FCS file, rename the relevant channels, and export
+a new FCS file under the `/channel_rename/` directory. In order to avoid
+accidentally overwriting the original FCS files, the new files will have the
+`.renamed.fcs` suffix added to them.
+
+We would like to thank cytoforum for the [thread that inspired this feature](http://cytoforum.stanford.edu/viewtopic.php?f=3&t=874#p2536).
+
+> The package also includes `importChannelNames` and `renameFcsFileChannels`
+> which decouple the two steps and provide the user with more control over the
+> implementation. Read the relevant documentation for more details.
+
 ### Jensen-Shannon Divergence
 
 The [Jensen-Shannon (JS) divergence](https://en.wikipedia.org/wiki/Jensen%E2%80%93Shannon_divergence)
