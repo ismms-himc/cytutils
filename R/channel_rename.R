@@ -19,6 +19,9 @@ channelRename <- function(path, verbose = TRUE) {
     }
 
     channels <- read.csv(csv_filename, stringsAsFactors = FALSE)
+    channels$name[is.na(channels$name)] <- ""
+    channels$desc[is.na(channels$desc)] <- ""
+
     dest_path <- file.path(path, "channel_rename")
     if (!file.exists(dest_path)) dir.create(dest_path)
     renameFcsFileChannels(dest_path, filenames, channels, verbose = verbose)
@@ -105,9 +108,7 @@ renameFcsFileChannels <- function(dest_path,
   # Only keep channels that require changes.
   channels <-
     channels[channels$name != channels$new_name |
-              (is.na(channels$name) & !(is.na(channels$new_name))) |
-               channels$desc != channels$new_desc |
-               (is.na(channels$desc) & !(is.na(channels$new_desc))), ]
+               channels$desc != channels$new_desc, ]
 
   # Fix each file in turn.
   for (filename in filenames) {
@@ -116,6 +117,9 @@ renameFcsFileChannels <- function(dest_path,
     fcs <- flowCore::read.FCS(filename)
     # Merge file parameters with channel renames.
     params <- flowCore::pData(flowCore::parameters(fcs))
+    params$name[is.na(params$name)] <- ""
+    params$desc[is.na(params$desc)] <- ""
+
     params$keyword <- rownames(params)
     params <- merge(params, channels)
 
