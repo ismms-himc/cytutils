@@ -51,22 +51,26 @@ debarcoderImportKey <- function(filename) {
   )
 }
 
-#' Sort barcoding channel intensities.
+#' Prepare FCS data for debarcoding.
 #'
-#' Given an FCS flow frame, get intensity (expression) values for the barcoding
-#' channels and sort them for each event.
+#' Transform expression data using cofactor, scale to [0..1] range, and match to
+#' barcoding channels.
 #'
 #' @param fcs FCS flow frame.
 #' @param key Barcoding key data frame.
-#' @return Matrix of intensity values, sorted by event.
-debarcoderSortExprs <- function(fcs, key) {
-  # Match FCS channels to barcoding channels.
+#' @return Expression data after transformation, scaling, and matching.
+debarcoderPrepareFcs <- function(fcs, key, cofactor = 10) {
+  # Verify FCS has all key channels.
   missing_channels <- setdiff(key$channels, fcs@parameters@data$name)
   if (length(missing_channels) > 0) {
     stop("FCS data is missing the following barcoding channels: ",
          paste(missing_channels, collapse = ", "))
   }
 
-  exprs <- flowCore::exprs(fcs)[, key$channels]
-  t(apply(exprs, 1, sort, decreasing = TRUE))
+  # Transform and scale.
+  exprs <- flowCore::exprs(fcs)
+  exprs <- asinh(exprs / cofactor)
+  exprs <- apply(exprs, 2, function(x) (x - min(x)) / (max(x) - min(x)))
+  # Match FCS channels to barcoding channels.
+  exprs[, key$channels]
 }
