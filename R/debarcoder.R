@@ -9,24 +9,26 @@
 #' denoted as 1 (channel positive for code) or 0 (channel negative for code).
 #'
 #' @param filename CSV file from which to import the key.
-#' @return A barcoding key data frame.
+#' @return List with barcoding key, barcoding channel names, and number of
+#' positive channels for each code.
 #' @export
 debarcoderImportKey <- function(filename) {
   key <- read.csv(filename, stringsAsFactors = FALSE)
 
   n <- nrow(key)
-  channels <- key[, 2:ncol(key)]
+  channels <- colnames(key)[2:ncol(key)]
+  channel_data <- key[, channels]
   colnames(key)[1] <- tolower(colnames(key)[1])
 
   if (colnames(key)[1] != "code") {
     stop("first column of key should be named \"code\"")
   }
 
-  if (!all(channels == 0 | channels == 1)) {
+  if (!all(channel_data == 0 | channel_data == 1)) {
     stop("channel values are not 0 or 1")
   }
 
-  if (nrow(unique(channels)) != n) {
+  if (nrow(unique(channel_data)) != n) {
     stop("barcoding key cannot include duplicate code channel combinations")
   }
 
@@ -34,8 +36,17 @@ debarcoderImportKey <- function(filename) {
     stop("barcoding key cannot include duplicate code names")
   }
 
-  # Convert channel values to boolean.
-  key[, 2:ncol(key)] <- channels == 1
+  n_pos_channels <- unique(rowSums(channel_data))
+  if (length(n_pos_channels) > 1) {
+    stop("codes have a variable number of positive channels")
+  }
 
-  key
+  # Convert channel values to boolean.
+  key[, channels] <- channel_data == 1
+
+  list(
+    key = key,
+    channels = channels,
+    n_pos_channels = n_pos_channels
+  )
 }

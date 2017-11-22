@@ -10,7 +10,8 @@ debarcoderImportKey(filename)
 \item{filename}{CSV file from which to import the key.}
 }
 \value{
-A barcoding key data frame.
+List with barcoding key, barcoding channel names, and number of
+positive channels for each code.
 }
 \description{
 Import a barcoding key from a CSV file. The CSV header should be of the
