@@ -53,12 +53,16 @@ debarcoderImportKey <- function(filename) {
 
 #' Prepare FCS data for debarcoding.
 #'
-#' Transform expression data using cofactor, scale to [0..1] range, and match to
-#' barcoding channels.
+#' Transform expression data using cofactor, scale to [0..1] range, match to
+#' barcoding channels, and sort each event separately.
 #'
 #' @param fcs FCS flow frame.
 #' @param key Barcoding key data frame.
-#' @return Expression data after transformation, scaling, and matching.
+#' @param cofactor Before scaling, data will be transformed using inverse
+#' hyperbolic sin with given cofactor.
+#' @return Expression data after transformation, scaling, and matching, and an
+#' additional copy after sorting.
+#' @export
 debarcoderPrepareFcs <- function(fcs, key, cofactor = 10) {
   # Verify FCS has all key channels.
   missing_channels <- setdiff(key$channels, fcs@parameters@data$name)
@@ -72,5 +76,11 @@ debarcoderPrepareFcs <- function(fcs, key, cofactor = 10) {
   exprs <- asinh(exprs / cofactor)
   exprs <- apply(exprs, 2, function(x) (x - min(x)) / (max(x) - min(x)))
   # Match FCS channels to barcoding channels.
-  exprs[, key$channels]
+  exprs <- exprs[, key$channels]
+  exprs_sorted <- t(apply(exprs, 1, sort, decreasing = TRUE))
+
+  list(
+    exprs = exprs,
+    exprs_sorted = exprs_sorted
+  )
 }
