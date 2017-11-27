@@ -128,7 +128,8 @@ debarcoderLabelEvents <- function(exprs_list,
   labels[is.na(labels)] <- unlabeled_label
 
   data.frame(
-    Label = labels
+    Label = labels,
+    stringsAsFactors = FALSE
   )
 }
 
@@ -189,4 +190,40 @@ debarcoderUnlabelEvents <- function(exprs_list,
   labels$BcSepDist <- bc_separation_dist
   labels$MahalRatio <- mahal_ratio
   labels
+}
+
+#' Export debarcoded FCS files.
+#'
+#' Given an FCS file, export a separate file for each of the event labels
+#' (including unlabeled). If any additional parameters were used in the labeling
+#' (such as Mahalanobis Ratio) they will be included as columns in the FCS data.
+#'
+#' @param path_prefix Prefix to path where files will be expored. Each file will
+#' be named [prefix_path].[label].fcs.
+#' @inheritParams debarcoderPrepareFcs
+#' @inheritParams debarcoderUnlabelEvents
+#' @export
+debarcoderExportDebarcodedFcs <- function(path_prefix, fcs, labels) {
+  cols <- setdiff(colnames(labels), "Label")
+  codes <- unique(labels$Label)
+
+  # Export each code in turn.
+  for (code in codes) {
+    code_indices <- which(labels$Label == code)
+    code_fcs <- fcs[code_indices, ]
+
+    # Add any columsn that were involved in labeling.
+    if (length(cols) > 0) {
+      e <- flowCore::exprs(code_fcs)
+
+      for (col in cols) {
+        e <- cbind(e, labels[code_indices, col])
+        colnames(e)[ncol(e)] <- col
+      }
+
+      code_fcs <- flowCore::flowFrame(e, description = code_fcs@description)
+    }
+
+    flowCore::write.FCS(code_fcs, paste0(path_prefix, ".", code, ".fcs"))
+  }
 }
