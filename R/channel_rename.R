@@ -82,10 +82,12 @@ importChannelNames <- function(filenames, verbose = TRUE) {
     data.frame(
       name = name,
       desc = desc,
+      filename = filename,
       stringsAsFactors = FALSE
     )
   })
   channels <- do.call(rbind, channels)
+  channels <- channels[, c("name", "desc")]
   channels <- unique(channels)
 
   # Get mass from channel names.
@@ -145,7 +147,12 @@ renameFcsFileChannels <- function(dest_path,
     desc <- fcs@description
     for (row_idx in seq(nrow(params))) {
       row <- params[row_idx, ]
-      colnames(fcs@exprs)[colnames(fcs) == row$name] <- row$new_name
+      # Cover all possible venues for name, since it's unclear how flowCore
+      # works. The github source says it's colnames(fcs@exprs) but sometimes
+      # that does not work.
+      colnames(fcs@exprs)[colnames(fcs@exprs) == row$name] <- row$new_name
+      fcs@parameters@data[fcs@parameters@data$name == row$name, "name"] <-
+        row$new_name
       desc[paste0(row$keyword, "N")] <- row$new_name
       desc[paste0(row$keyword, "S")] <- row$new_desc
     }
