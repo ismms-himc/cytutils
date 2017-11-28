@@ -22,9 +22,18 @@ channelRename <- function(path, verbose = TRUE) {
     channels$name[is.na(channels$name)] <- ""
     channels$desc[is.na(channels$desc)] <- ""
 
+    dups <- .findMassDups(channels)
+    if (length(dups) > 0) {
+      stop(paste0("the following masses have duplicate new_name or new_desc: ",
+                  paste(dups, collapse = ", ")))
+    }
+
     dest_path <- file.path(path, "channel_rename")
     if (!file.exists(dest_path)) dir.create(dest_path)
-    renameFcsFileChannels(dest_path, filenames, channels, verbose = verbose)
+    renameFcsFileChannels(dest_path,
+                          filenames,
+                          channels,
+                          verbose = verbose)
 
     if (verbose) message("Export done")
   } else {
@@ -88,6 +97,15 @@ importChannelNames <- function(filenames, verbose = TRUE) {
   channels$dup <- channels$mass %in% channels$mass[duplicated(channels$mass)]
 
   channels
+}
+
+.findMassDups <- function(channels) {
+  # Find masses with duplicate descriptions or names.
+  desc_dups <- unique(channels[, c("mass", "new_desc")])
+  name_dups <- unique(channels[, c("mass", "new_name")])
+
+  c(desc_dups[duplicated(desc_dups$mass), "mass"],
+    name_dups[duplicated(name_dups$mass), "mass"])
 }
 
 #' Rename channels in set of FCS files.
