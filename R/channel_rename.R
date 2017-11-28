@@ -180,7 +180,7 @@ renameFcsFileChannels <- function(dest_path,
     for (keyword in dup_desc_keywords) {
       keyword <- gsub("S", "", keyword)
       new_desc <-
-        paste0(fcs@parameters@data[row$keyword, "desc"], "_",
+        paste0(fcs@parameters@data[keyword, "desc"], "_",
                gsub("\\$", "", keyword))
       fcs@parameters@data[keyword, "desc"] <- new_desc
       desc[paste0(keyword, "S")] <- new_desc
