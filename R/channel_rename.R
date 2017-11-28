@@ -167,10 +167,23 @@ renameFcsFileChannels <- function(dest_path,
       # works. The github source says it's colnames(fcs@exprs) but sometimes
       # that does not work.
       colnames(fcs@exprs)[colnames(fcs@exprs) == row$name] <- row$new_name
-      fcs@parameters@data[fcs@parameters@data$name == row$name, "name"] <-
-        row$new_name
+      fcs@parameters@data[row$keyword, "name"] <- row$new_name
+      fcs@parameters@data[row$keyword, "desc"] <- row$new_desc
       desc[paste0(row$keyword, "N")] <- row$new_name
       desc[paste0(row$keyword, "S")] <- row$new_desc
+    }
+
+    # Mark duplicated descriptions.
+    descs <- fcs@parameters@data$desc
+    descs <- descs[!is.na(descs)]
+    dup_desc_keywords <- names(descs)[which(duplicated(descs))]
+    for (keyword in dup_desc_keywords) {
+      keyword <- gsub("S", "", keyword)
+      new_desc <-
+        paste0(fcs@parameters@data[row$keyword, "desc"], "_",
+               gsub("\\$", "", keyword))
+      fcs@parameters@data[keyword, "desc"] <- new_desc
+      desc[paste0(keyword, "S")] <- new_desc
     }
 
     # Update FlowFrame and export.
