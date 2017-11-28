@@ -4,10 +4,13 @@
 \alias{channelRename}
 \title{FCS channel renaming.}
 \usage{
-channelRename(path, verbose = TRUE)
+channelRename(path, dup_handling = "warning", verbose = TRUE)
 }
 \arguments{
 \item{path}{Directory where FCS files are located.}
+
+\item{dup_handling}{How to handle masses with duplicates name or desc.
+Options are "stop", "warning", and NULL.}
 
 \item{verbose}{If TRUE, script will report progress to console.}
 }

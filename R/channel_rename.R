@@ -7,16 +7,16 @@
 #'
 #' @param path Directory where FCS files are located.
 #' @param dup_handling How to handle masses with duplicates name or desc.
-#' Options are "stop", "warning", and NULL.
+#' Options are "stop", "message", and NULL.
 #' @param verbose If TRUE, script will report progress to console.
 #' @export
-channelRename <- function(path, dup_handling = "warning", verbose = TRUE) {
+channelRename <- function(path, dup_handling = "message", verbose = TRUE) {
   filenames <- file.path(path, dir(path, "\\.fcs$"))
   if (length(filenames) == 0) stop("could not find any FCS files at given path")
 
   if (!is.null(dup_handling)) {
-    if (!(dup_handling %in% c("warning", "stop"))) {
-      stop("dup_handling not in allowed values (NULL, warning, or stop)")
+    if (!(dup_handling %in% c("message", "stop"))) {
+      stop("dup_handling not in allowed values (NULL, message, or stop)")
     }
   }
 
@@ -36,8 +36,8 @@ channelRename <- function(path, dup_handling = "warning", verbose = TRUE) {
         msg <-
           paste0("the following masses have duplicate new_name or new_desc: ",
                  paste(dups, collapse = ", "))
-        if (dup_handling == "warning") {
-          warning(msg)
+        if (dup_handling == "message") {
+          message(msg)
         } else if (dup_handling == "stop") {
           stop(msg)
         }
