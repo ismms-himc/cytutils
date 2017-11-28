@@ -116,7 +116,7 @@ renameFcsFileChannels <- function(dest_path,
 
     fcs <- flowCore::read.FCS(filename)
     # Merge file parameters with channel renames.
-    params <- flowCore::pData(flowCore::parameters(fcs))
+    params <- fcs@parameters@data
     params$name[is.na(params$name)] <- ""
     params$desc[is.na(params$desc)] <- ""
 
@@ -124,24 +124,22 @@ renameFcsFileChannels <- function(dest_path,
     params <- merge(params, channels)
 
     # Rename each parameter in turn.
-    desc <- description(fcs)
+    desc <- fcs@description
     for (row_idx in seq(nrow(params))) {
       row <- params[row_idx, ]
-      # flowCore::write.FCS takes name from flowFrame column names.
-      colnames(fcs)[colnames(fcs) == row$name] <- row$new_name
-      # flowCore::write.FCS takes desc from flowFrame description field.
+      colnames(fcs@exprs)[colnames(fcs) == row$name] <- row$new_name
+      desc[paste0(row$keyword, "N")] <- row$new_name
       desc[paste0(row$keyword, "S")] <- row$new_desc
     }
 
     # Update FlowFrame and export.
-    description(fcs) <- desc
+    fcs@description <- desc
     filename <- basename(filename)
     if (suffix != "") {
       dest_filename <-
         file.path(dest_path, paste0(filename, ".", suffix, ".fcs"))
     } else {
-      dest_filename <-
-        file.path(dest_path, filename)
+      dest_filename <- file.path(dest_path, filename)
     }
     if (verbose) message("\t--> ", dest_filename)
     flowCore::write.FCS(fcs, dest_filename)
