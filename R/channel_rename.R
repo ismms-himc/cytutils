@@ -22,9 +22,18 @@ channelRename <- function(path, verbose = TRUE) {
     channels$name[is.na(channels$name)] <- ""
     channels$desc[is.na(channels$desc)] <- ""
 
+    dups <- .findMassDups(channels)
+    if (length(dups) > 0) {
+      stop(paste0("the following masses have duplicate new_name or new_desc: ",
+                  paste(dups, collapse = ", ")))
+    }
+
     dest_path <- file.path(path, "channel_rename")
     if (!file.exists(dest_path)) dir.create(dest_path)
-    renameFcsFileChannels(dest_path, filenames, channels, verbose = verbose)
+    renameFcsFileChannels(dest_path,
+                          filenames,
+                          channels,
+                          verbose = verbose)
 
     if (verbose) message("Export done")
   } else {
@@ -73,10 +82,12 @@ importChannelNames <- function(filenames, verbose = TRUE) {
     data.frame(
       name = name,
       desc = desc,
+      filename = filename,
       stringsAsFactors = FALSE
     )
   })
   channels <- do.call(rbind, channels)
+  channels <- channels[, c("name", "desc")]
   channels <- unique(channels)
 
   # Get mass from channel names.
@@ -88,6 +99,15 @@ importChannelNames <- function(filenames, verbose = TRUE) {
   channels$dup <- channels$mass %in% channels$mass[duplicated(channels$mass)]
 
   channels
+}
+
+.findMassDups <- function(channels) {
+  # Find masses with duplicate descriptions or names.
+  desc_dups <- unique(channels[, c("mass", "new_desc")])
+  name_dups <- unique(channels[, c("mass", "new_name")])
+
+  c(desc_dups[duplicated(desc_dups$mass), "mass"],
+    name_dups[duplicated(name_dups$mass), "mass"])
 }
 
 #' Rename channels in set of FCS files.
@@ -116,7 +136,7 @@ renameFcsFileChannels <- function(dest_path,
 
     fcs <- flowCore::read.FCS(filename)
     # Merge file parameters with channel renames.
-    params <- flowCore::pData(flowCore::parameters(fcs))
+    params <- fcs@parameters@data
     params$name[is.na(params$name)] <- ""
     params$desc[is.na(params$desc)] <- ""
 
@@ -124,24 +144,27 @@ renameFcsFileChannels <- function(dest_path,
     params <- merge(params, channels)
 
     # Rename each parameter in turn.
-    desc <- description(fcs)
+    desc <- fcs@description
     for (row_idx in seq(nrow(params))) {
       row <- params[row_idx, ]
-      # flowCore::write.FCS takes name from flowFrame column names.
-      colnames(fcs)[colnames(fcs) == row$name] <- row$new_name
-      # flowCore::write.FCS takes desc from flowFrame description field.
+      # Cover all possible venues for name, since it's unclear how flowCore
+      # works. The github source says it's colnames(fcs@exprs) but sometimes
+      # that does not work.
+      colnames(fcs@exprs)[colnames(fcs@exprs) == row$name] <- row$new_name
+      fcs@parameters@data[fcs@parameters@data$name == row$name, "name"] <-
+        row$new_name
+      desc[paste0(row$keyword, "N")] <- row$new_name
       desc[paste0(row$keyword, "S")] <- row$new_desc
     }
 
     # Update FlowFrame and export.
-    description(fcs) <- desc
+    fcs@description <- desc
     filename <- basename(filename)
     if (suffix != "") {
       dest_filename <-
         file.path(dest_path, paste0(filename, ".", suffix, ".fcs"))
     } else {
-      dest_filename <-
-        file.path(dest_path, filename)
+      dest_filename <- file.path(dest_path, filename)
     }
     if (verbose) message("\t--> ", dest_filename)
     flowCore::write.FCS(fcs, dest_filename)
