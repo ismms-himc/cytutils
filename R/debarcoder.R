@@ -194,7 +194,7 @@ debarcoderUnlabelEvents <- function(exprs_list,
 
 #' Export debarcoded FCS files.
 #'
-#' Given an FCS file, export a separate file for each of the event labels
+#' Given an FCS file, export a separate FCS file for each of the event labels
 #' (including unlabeled). If any additional parameters were used in the labeling
 #' (such as Mahalanobis Ratio) they will be included as columns in the FCS data.
 #'
@@ -226,4 +226,49 @@ debarcoderExportDebarcodedFcs <- function(path_prefix, fcs, labels) {
 
     flowCore::write.FCS(code_fcs, paste0(path_prefix, ".", code, ".fcs"))
   }
+}
+
+#' Debarcoder diagnostic plots.
+#'
+#' Given an FCS file, generate a separate scatter plot of Mahalanobis ratio
+#' versus barcoding separation distance.
+#'
+#' @param path_prefix Either NULL (do not export figures) or prefix to path
+#' where files will be expored. Each file will be named
+#' [prefix_path].[label].jpg.
+#' @inheritParams debarcoderPrepareFcs
+#' @inheritParams debarcoderUnlabelEvents
+#' @importFrom ggplot2 ggplot aes geom_point scale_x_log10 scale_y_continuous labs theme ggsave
+#' @return A list of ggplot objects corresponding to the figures.
+#' @export
+debarcoderPlots <- function(path_prefix, fcs, labels) {
+  if (!("BcSepDist" %in% colnames(labels))) stop("labels missing BcSepDist")
+  if (!("MahalRatio" %in% colnames(labels))) stop("labels missing MahalRatio")
+
+  codes <- unique(labels$Label)
+
+  xlim <- c(1, max(labels$MahalRatio))
+
+  figs <- lapply(codes, function(code) {
+    code_indices <- which(labels$Label == code)
+    ggplot(labels[code_indices, ], aes(x = MahalRatio, y = BcSepDist)) +
+      geom_point(size = 0, alpha = 0.2) +
+      scale_x_log10(limits = xlim) +
+      scale_y_continuous(limits = c(0, 1)) +
+      labs(title = paste0("Debarcoding diagnostic for ", code),
+           x = "log10(Mahalanobis Ratio)",
+           y = "Barcoding Separation Distance") +
+      theme(aspect.ratio = 1)
+  })
+  names(figs) <- codes
+
+  # Export figures as JPGs if path_prefix exists.
+  if (!is.null(path_prefix)) {
+    for (code in codes) {
+      ggsave(paste0(path_prefix, ".", code, ".jpg"),
+             figs[[code]], width = 4, height = 4)
+    }
+  }
+
+  figs
 }

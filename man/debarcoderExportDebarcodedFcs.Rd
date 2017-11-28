@@ -15,7 +15,7 @@ be named [prefix_path].[label].fcs.}
 \item{labels}{Data frame with an event label column.}
 }
 \description{
-Given an FCS file, export a separate file for each of the event labels
+Given an FCS file, export a separate FCS file for each of the event labels
 (including unlabeled). If any additional parameters were used in the labeling
 (such as Mahalanobis Ratio) they will be included as columns in the FCS data.
 }
