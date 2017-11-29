@@ -199,7 +199,7 @@ debarcoderUnlabelEvents <- function(exprs_list,
 #' (including unlabeled). If any additional parameters were used in the labeling
 #' (such as Mahalanobis Ratio) they will be included as columns in the FCS data.
 #'
-#' @param path_prefix Prefix to path where files will be expored. Each file will
+#' @param path_prefix Prefix to path where files will be exported. Each file will
 #' be named [prefix_path].[label].fcs.
 #' @inheritParams debarcoderPrepareFcs
 #' @inheritParams debarcoderUnlabelEvents
@@ -235,7 +235,7 @@ debarcoderExportDebarcodedFcs <- function(path_prefix, fcs, labels) {
 #' versus barcoding separation distance.
 #'
 #' @param path_prefix Either NULL (do not export figures) or prefix to path
-#' where files will be expored. Each file will be named
+#' where files will be exported. Each file will be named
 #' [prefix_path].[label].jpg.
 #' @inheritParams debarcoderPrepareFcs
 #' @inheritParams debarcoderUnlabelEvents

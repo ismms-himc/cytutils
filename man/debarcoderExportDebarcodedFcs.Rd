@@ -7,7 +7,7 @@
 debarcoderExportDebarcodedFcs(path_prefix, fcs, labels)
 }
 \arguments{
-\item{path_prefix}{Prefix to path where files will be expored. Each file will
+\item{path_prefix}{Prefix to path where files will be exported. Each file will
 be named [prefix_path].[label].fcs.}
 
 \item{fcs}{FCS flow frame.}

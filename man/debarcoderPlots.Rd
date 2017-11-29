@@ -8,7 +8,7 @@ debarcoderPlots(path_prefix, fcs, labels)
 }
 \arguments{
 \item{path_prefix}{Either NULL (do not export figures) or prefix to path
-where files will be expored. Each file will be named
+where files will be exported. Each file will be named
 [prefix_path].[label].jpg.}
 
 \item{fcs}{FCS flow frame.}
