@@ -4,13 +4,15 @@
 \alias{debarcoderUnlabelEvents}
 \title{Unlabel events.}
 \usage{
-debarcoderUnlabelEvents(exprs_list, labels, threshold_per = 0.99,
+debarcoderUnlabelEvents(exprs_list, labels, key, threshold_per = 0.99,
   unlabeled_label = "unlabeled")
 }
 \arguments{
 \item{exprs_list}{A list with expression and sorted expression matrices.}
 
 \item{labels}{Data frame with an event label column.}
+
+\item{key}{Barcoding key data frame.}
 
 \item{threshold_per}{Percentile for setting distance and ratio thresholds.}
 

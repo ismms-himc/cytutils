@@ -150,6 +150,7 @@ debarcoderLabelEvents <- function(exprs_list,
 #' @export
 debarcoderUnlabelEvents <- function(exprs_list,
                                     labels,
+                                    key,
                                     threshold_per = 0.99,
                                     unlabeled_label = "unlabeled") {
   .verifyExprsList(exprs_list)
@@ -271,4 +272,48 @@ debarcoderPlots <- function(path_prefix, fcs, labels) {
   }
 
   figs
+}
+
+#' Debarcode an FCS file.
+#'
+#' Import FCS file and barcoding key and run it through the debarcoding
+#' workflow: label events using Zunder et al., unlabel events according to
+#' barcoding separation distance and Mahalanobis ratio heuristics, and export
+#' each label to a separate file along with an accompanying diagnostic plot.
+#'
+#' Please note that this function ends with a series of warnings due to
+#' flowCore's write.FCS.
+#'
+#' @param fcs_file_path FCS file path.
+#' @param key_file_path CSV barcoding key file path.
+#' @param export_figures If TRUE, the function will export diagnostic plots.
+#' @param verbose If TRUE, the function will message the console with updates.
+#' @export
+debarcode <- function(fcs_file_path,
+                      key_file_path,
+                      export_figures = TRUE,
+                      verbose = TRUE) {
+  if (!file.exists(fcs_file_path)) {
+    stop(paste0("unable to find ", fcs_file_path))
+  }
+  if (!file.exists(key_file_path)) {
+    stop(paste0("unable to find ", key_file_path))
+  }
+
+  key <- cytutils::debarcoderImportKey(key_file_path)
+  if (verbose) message("importing FCS file ...")
+  fcs <- flowCore::read.FCS(fcs_file_path)
+  if (verbose) message("debarcoding ...")
+  exprs_list <- cytutils::debarcoderPrepareFcs(fcs, key)
+  labels <- cytutils::debarcoderLabelEvents(exprs_list, key)
+  if (verbose) message("unlabeling events using heuristics ...")
+  labels <- cytutils::debarcoderUnlabelEvents(exprs_list, labels, key)
+  if (verbose) message("exporting debarcoded FCS files ...")
+  cytutils::debarcoderExportDebarcodedFcs(fcs_file_path, fcs, labels)
+  if (export_figures) {
+    if (verbose) message("exporting plots ...")
+    cytutils::debarcoderPlots(fcs_file_path, fcs, labels)
+  }
+
+  return()
 }
