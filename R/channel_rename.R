@@ -6,11 +6,19 @@
 #' Readme at "FCS Channel Renaming" for instructions.
 #'
 #' @param path Directory where FCS files are located.
+#' @param dup_handling How to handle masses with duplicates name or desc.
+#' Options are "stop", "message", and NULL.
 #' @param verbose If TRUE, script will report progress to console.
 #' @export
-channelRename <- function(path, verbose = TRUE) {
+channelRename <- function(path, dup_handling = "message", verbose = TRUE) {
   filenames <- file.path(path, dir(path, "\\.fcs$"))
   if (length(filenames) == 0) stop("could not find any FCS files at given path")
+
+  if (!is.null(dup_handling)) {
+    if (!(dup_handling %in% c("message", "stop"))) {
+      stop("dup_handling not in allowed values (NULL, message, or stop)")
+    }
+  }
 
   csv_filename <- file.path(path, "channel_rename.csv")
   if (file.exists(csv_filename)) {
@@ -22,10 +30,18 @@ channelRename <- function(path, verbose = TRUE) {
     channels$name[is.na(channels$name)] <- ""
     channels$desc[is.na(channels$desc)] <- ""
 
-    dups <- .findMassDups(channels)
-    if (length(dups) > 0) {
-      stop(paste0("the following masses have duplicate new_name or new_desc: ",
-                  paste(dups, collapse = ", ")))
+    if (!is.null(dup_handling)) {
+      dups <- .findMassDups(channels)
+      if (length(dups) > 0) {
+        msg <-
+          paste0("the following masses have duplicate new_name or new_desc: ",
+                 paste(dups, collapse = ", "))
+        if (dup_handling == "message") {
+          message(msg)
+        } else if (dup_handling == "stop") {
+          stop(msg)
+        }
+      }
     }
 
     dest_path <- file.path(path, "channel_rename")
@@ -151,10 +167,23 @@ renameFcsFileChannels <- function(dest_path,
       # works. The github source says it's colnames(fcs@exprs) but sometimes
       # that does not work.
       colnames(fcs@exprs)[colnames(fcs@exprs) == row$name] <- row$new_name
-      fcs@parameters@data[fcs@parameters@data$name == row$name, "name"] <-
-        row$new_name
+      fcs@parameters@data[row$keyword, "name"] <- row$new_name
+      fcs@parameters@data[row$keyword, "desc"] <- row$new_desc
       desc[paste0(row$keyword, "N")] <- row$new_name
       desc[paste0(row$keyword, "S")] <- row$new_desc
+    }
+
+    # Mark duplicated descriptions.
+    descs <- fcs@parameters@data$desc
+    descs <- descs[!is.na(descs)]
+    dup_desc_keywords <- names(descs)[which(duplicated(descs))]
+    for (keyword in dup_desc_keywords) {
+      keyword <- gsub("S", "", keyword)
+      new_desc <-
+        paste0(fcs@parameters@data[keyword, "desc"], "_",
+               gsub("\\$", "", keyword))
+      fcs@parameters@data[keyword, "desc"] <- new_desc
+      desc[paste0(keyword, "S")] <- new_desc
     }
 
     # Update FlowFrame and export.
