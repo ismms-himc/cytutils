@@ -92,7 +92,8 @@ debarcoderPrepareFcs <- function(fcs, key, cofactor = 10) {
   # Transform and scale.
   exprs <- flowCore::exprs(fcs)
   exprs <- asinh(exprs / cofactor)
-  exprs <- apply(exprs, 2, function(x) (x - min(x)) / (max(x) - min(x)))
+  exprs <-
+    apply(exprs, 2, function(x) (x - min(x)) / (quantile(x, 0.99) - min(x)))
   # Match FCS channels to barcoding channels.
   exprs <- exprs[, key$channels]
   exprs_sorted <- t(apply(exprs, 1, sort, decreasing = TRUE))
@@ -162,10 +163,12 @@ debarcoderUnlabelEvents <- function(exprs_list,
 
   # Identify suspect events.
   n_pos <- key$n_pos_channels
-  diff_1_2 <- with(exprs_list, exprs_sorted[, 1] - exprs_sorted[, 2])
+  diffs <- unlist(lapply(seq(n_pos - 1), function(pos) {
+    exprs_list$exprs_sorted[, pos] - exprs_list$exprs_sorted[, pos + 1]
+  }))
   bc_separation_dist <-
     with(exprs_list, exprs_sorted[, n_pos] - exprs_sorted[, n_pos + 1])
-  diff_thresh <- quantile(diff_1_2, threshold_per)
+  diff_thresh <- quantile(diffs, threshold_per)
   suspect_indices <- which(bc_separation_dist < diff_thresh)
 
   # Calculate Mahalanobis ratio.
