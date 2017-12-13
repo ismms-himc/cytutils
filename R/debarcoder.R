@@ -234,25 +234,28 @@ debarcoderExportDebarcodedFcs <- function(path_prefix, fcs, labels) {
 
 #' Debarcoder diagnostic plots.
 #'
-#' Given an FCS file, generate a separate scatter plot of Mahalanobis ratio
-#' versus barcoding separation distance.
+#' Given an FCS file, generate several debarcoder diagnostic plots. These
+#' includea separate scatter plot of Mahalanobis ratio versus barcoding
+#' separation distance, Mahalanobis ratio distribution, and barcoding separation
+#' distance distribution.
 #'
 #' @param path_prefix Either NULL (do not export figures) or prefix to path
-#' where files will be exported. Each file will be named
-#' [prefix_path].[label].jpg.
+#' where files will be exported.
 #' @inheritParams debarcoderPrepareFcs
 #' @inheritParams debarcoderUnlabelEvents
 #' @importFrom ggplot2 ggplot aes geom_point scale_x_log10 scale_y_continuous labs theme ggsave
 #' @return A list of ggplot objects corresponding to the figures.
 #' @export
-debarcoderPlots <- function(path_prefix, fcs, labels) {
+debarcoderPlots <- function(path_prefix, labels) {
   if (!("BcSepDist" %in% colnames(labels))) stop("labels missing BcSepDist")
   if (!("MahalRatio" %in% colnames(labels))) stop("labels missing MahalRatio")
 
   codes <- unique(labels$Label)
 
-  xlim <- c(1, max(labels$MahalRatio))
+  xlim <- c(1, max(max(labels$MahalRatio), 10000))
 
+  # Figures: Mahlanobis ratio versus barcoding separation distance, for each
+  # code.
   figs <- lapply(codes, function(code) {
     code_indices <- which(labels$Label == code)
     ggplot(labels[code_indices, ], aes(x = MahalRatio, y = BcSepDist)) +
@@ -266,11 +269,38 @@ debarcoderPlots <- function(path_prefix, fcs, labels) {
   })
   names(figs) <- codes
 
+  # Figures: Mahalanobis ratio and barcoding separation distance
+  # distributions.
+  figs[["mahalanobis_ratio"]] <-
+    ggplot(labels, aes(x = MahalRatio)) +
+    geom_density(fill = "grey") +
+    scale_x_log10(limits = xlim) +
+    labs(title = "Mahalanobis ratio distribution",
+         x = "log10(Mahalanobis Ratio)",
+         y = "Density")
+
+  figs[["barcoding_separation_distance"]] <-
+    ggplot(labels, aes(x = BcSepDist)) +
+    geom_density(fill = "grey") +
+    scale_x_continuous(limits = c(0, 1)) +
+    labs(title = "Barcoding separation distance distribution",
+         x = "Barcoding Separation Distance",
+         y = "Density")
+
   # Export figures as JPGs if path_prefix exists.
   if (!is.null(path_prefix)) {
+    path <- paste0(path_prefix, ".debarcoding_figures")
+    if (!file.exists(path)) dir.create(path)
+
     for (code in codes) {
-      ggsave(paste0(path_prefix, ".", code, ".jpg"),
+      ggsave(file.path(path,
+                       paste0("mahalanobis_versus_barcoding.", code, ".jpg")),
              figs[[code]], width = 4, height = 4)
+    }
+
+    for (dist in c("mahalanobis_ratio", "barcoding_separation_distance")) {
+      ggsave(file.path(path, paste0(dist, ".jpg")),
+             figs[[dist]], width = 4, height = 3)
     }
   }
 

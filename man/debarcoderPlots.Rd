@@ -4,14 +4,11 @@
 \alias{debarcoderPlots}
 \title{Debarcoder diagnostic plots.}
 \usage{
-debarcoderPlots(path_prefix, fcs, labels)
+debarcoderPlots(path_prefix, labels)
 }
 \arguments{
 \item{path_prefix}{Either NULL (do not export figures) or prefix to path
-where files will be exported. Each file will be named
-[prefix_path].[label].jpg.}
-
-\item{fcs}{FCS flow frame.}
+where files will be exported.}
 
 \item{labels}{Data frame with an event label column.}
 }
@@ -19,6 +16,8 @@ where files will be exported. Each file will be named
 A list of ggplot objects corresponding to the figures.
 }
 \description{
-Given an FCS file, generate a separate scatter plot of Mahalanobis ratio
-versus barcoding separation distance.
+Given an FCS file, generate several debarcoder diagnostic plots. These
+includea separate scatter plot of Mahalanobis ratio versus barcoding
+separation distance, Mahalanobis ratio distribution, and barcoding separation
+distance distribution.
 }
