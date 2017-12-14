@@ -29,11 +29,17 @@
 #' @export
 debarcoderImportKey <- function(filename) {
   key <- read.csv(filename, stringsAsFactors = FALSE)
+  colnames(key)[1] <- tolower(colnames(key)[1])
+
+  channels <- colnames(key)[2:ncol(key)]
+  # Remove degenerate channels.
+  degenerate_channels <-
+    names(which(apply(channel_data, 2, function(v) !any(v))))
+  channels <- setdiff(channels, degenerate_channels)
+  key[, degenerate_channels] <- NULL
 
   n <- nrow(key)
-  channels <- colnames(key)[2:ncol(key)]
   channel_data <- key[, channels]
-  colnames(key)[1] <- tolower(colnames(key)[1])
 
   if (colnames(key)[1] != "code") {
     stop("first column of key should be named \"code\"")
@@ -51,6 +57,7 @@ debarcoderImportKey <- function(filename) {
     stop("barcoding key cannot include duplicate code names")
   }
 
+
   n_pos_channels <- unique(rowSums(channel_data))
   if (length(n_pos_channels) > 1) {
     stop("codes have a variable number of positive channels")
@@ -62,6 +69,7 @@ debarcoderImportKey <- function(filename) {
   list(
     key = key,
     channels = channels,
+    degenerate_channels = degenerate_channels,
     n_pos_channels = n_pos_channels
   )
 }
