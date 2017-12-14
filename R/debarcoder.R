@@ -32,11 +32,15 @@ debarcoderImportKey <- function(filename) {
   colnames(key)[1] <- tolower(colnames(key)[1])
 
   channels <- colnames(key)[2:ncol(key)]
-  # Remove degenerate channels.
+  # Alert if degenerate channels exist.
   degenerate_channels <-
     names(which(apply(key[, channels], 2, function(v) !any(v))))
-  channels <- setdiff(channels, degenerate_channels)
-  key[, degenerate_channels] <- NULL
+  if (length(degenerate_channels) > 0) {
+    warning(paste0(
+      "key includes degenerate channels which might impact performance: ",
+      paste(degenerate_channels, collapse = ", ")
+    ))
+  }
 
   n <- nrow(key)
   channel_data <- key[, channels]
