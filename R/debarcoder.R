@@ -161,14 +161,18 @@ debarcoderUnlabelEvents <- function(exprs_list,
     stop("labels has already been unlabeled")
   }
 
-  # Identify suspect events.
+  # Identify suspect events. First, for each event, find the minimum difference
+  # between all pairs of positive channels. Suspect events have a barcoding
+  # separation distance above the threshold percentile of that distribution.
   n_pos <- key$n_pos_channels
-  diffs <- unlist(lapply(seq(n_pos - 1), function(pos) {
+  diffs <- lapply(seq(n_pos - 1), function(pos) {
     exprs_list$exprs_sorted[, pos] - exprs_list$exprs_sorted[, pos + 1]
-  }))
+  })
+  diffs <- do.call(cbind, diffs)
+  diffs <- apply(diffs, 1, min)
+  diff_thresh <- quantile(diffs, threshold_per)
   bc_separation_dist <-
     with(exprs_list, exprs_sorted[, n_pos] - exprs_sorted[, n_pos + 1])
-  diff_thresh <- quantile(diffs, threshold_per)
   suspect_indices <- which(bc_separation_dist < diff_thresh)
 
   # Calculate Mahalanobis ratio.
