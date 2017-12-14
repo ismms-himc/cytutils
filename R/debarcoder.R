@@ -34,7 +34,7 @@ debarcoderImportKey <- function(filename) {
   channels <- colnames(key)[2:ncol(key)]
   # Remove degenerate channels.
   degenerate_channels <-
-    names(which(apply(channel_data, 2, function(v) !any(v))))
+    names(which(apply(key[, channels], 2, function(v) !any(v))))
   channels <- setdiff(channels, degenerate_channels)
   key[, degenerate_channels] <- NULL
 
