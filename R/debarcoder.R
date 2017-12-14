@@ -287,6 +287,12 @@ debarcoderPlots <- function(path_prefix, labels) {
          x = "Barcoding Separation Distance",
          y = "Density")
 
+  # Table: Code counts.
+  code_counts <- labels_u %>%
+    dplyr::count(Label) %>%
+    dplyr::mutate(Freq = n / sum(n))
+  figs[["code_counts"]] <- code_counts
+
   # Export figures as JPGs if path_prefix exists.
   if (!is.null(path_prefix)) {
     path <- paste0(path_prefix, ".debarcoding_figures")
@@ -302,6 +308,10 @@ debarcoderPlots <- function(path_prefix, labels) {
       ggsave(file.path(path, paste0(dist, ".jpg")),
              figs[[dist]], width = 4, height = 3)
     }
+
+    write.csv(code_counts,
+              file.path(path, "code_counts.csv"),
+              row.names = FALSE)
   }
 
   figs
