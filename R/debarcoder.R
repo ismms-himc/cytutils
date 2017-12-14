@@ -333,11 +333,15 @@ debarcoderPlots <- function(path_prefix, labels) {
 #'
 #' @param fcs_file_path FCS file path.
 #' @param key_file_path CSV barcoding key file path.
+#' @param export_files If TRUE, the function will export debarcoded FCS files.
 #' @param export_figures If TRUE, the function will export diagnostic plots.
 #' @param verbose If TRUE, the function will message the console with updates.
+#' @return A data frame with a row for every event. Columns are label, barcoding
+#' separation distance, and Mahalanobis ratio.
 #' @export
 debarcode <- function(fcs_file_path,
                       key_file_path,
+                      export_files = TRUE,
                       export_figures = TRUE,
                       verbose = TRUE) {
   if (!file.exists(fcs_file_path)) {
@@ -347,20 +351,24 @@ debarcode <- function(fcs_file_path,
     stop(paste0("unable to find ", key_file_path))
   }
 
-  key <- cytutils::debarcoderImportKey(key_file_path)
+  key <- debarcoderImportKey(key_file_path)
   if (verbose) message("importing FCS file ...")
   fcs <- flowCore::read.FCS(fcs_file_path)
   if (verbose) message("debarcoding ...")
-  exprs_list <- cytutils::debarcoderPrepareFcs(fcs, key)
-  labels <- cytutils::debarcoderLabelEvents(exprs_list, key)
+  exprs_list <- debarcoderPrepareFcs(fcs, key)
+  labels <- debarcoderLabelEvents(exprs_list, key)
   if (verbose) message("unlabeling events using heuristics ...")
-  labels <- cytutils::debarcoderUnlabelEvents(exprs_list, labels, key)
-  if (verbose) message("exporting debarcoded FCS files ...")
-  cytutils::debarcoderExportDebarcodedFcs(fcs_file_path, fcs, labels)
-  if (export_figures) {
-    if (verbose) message("exporting plots ...")
-    cytutils::debarcoderPlots(fcs_file_path, fcs, labels)
+  labels <- debarcoderUnlabelEvents(exprs_list, labels, key)
+
+  if (export_files) {
+    if (verbose) message("exporting debarcoded FCS files ...")
+    debarcoderExportDebarcodedFcs(fcs_file_path, fcs, labels)
   }
 
-  return()
+  if (export_figures) {
+    if (verbose) message("exporting plots ...")
+    debarcoderPlots(fcs_file_path, labels)
+  }
+
+  return(labels)
 }

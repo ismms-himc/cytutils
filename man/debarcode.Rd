@@ -4,17 +4,23 @@
 \alias{debarcode}
 \title{Debarcode an FCS file.}
 \usage{
-debarcode(fcs_file_path, key_file_path, export_figures = TRUE,
-  verbose = TRUE)
+debarcode(fcs_file_path, key_file_path, export_files = TRUE,
+  export_figures = TRUE, verbose = TRUE)
 }
 \arguments{
 \item{fcs_file_path}{FCS file path.}
 
 \item{key_file_path}{CSV barcoding key file path.}
 
+\item{export_files}{If TRUE, the function will export debarcoded FCS files.}
+
 \item{export_figures}{If TRUE, the function will export diagnostic plots.}
 
 \item{verbose}{If TRUE, the function will message the console with updates.}
+}
+\value{
+A data frame with a row for every event. Columns are label, barcoding
+separation distance, and Mahalanobis ratio.
 }
 \description{
 Import FCS file and barcoding key and run it through the debarcoding
