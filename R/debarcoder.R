@@ -267,6 +267,9 @@ debarcoderPlots <- function(path_prefix, labels) {
   if (!("MahalRatio" %in% colnames(labels))) stop("labels missing MahalRatio")
 
   codes <- unique(labels$Label)
+  View(codes)
+  View(labels)
+
 
   xlim <- c(1, max(max(labels$MahalRatio), 10000))
 
@@ -304,7 +307,8 @@ debarcoderPlots <- function(path_prefix, labels) {
          y = "Density")
 
   # Table: Code counts.
-  code_counts <- labels_u %>%
+  # TODO: try codes and labels in place of labels_u which is undefined
+  code_counts <- labels %>%
     dplyr::count(Label) %>%
     dplyr::mutate(Freq = n / sum(n))
   figs[["code_counts"]] <- code_counts
