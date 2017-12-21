@@ -259,7 +259,7 @@ debarcoderExportDebarcodedFcs <- function(path_prefix, fcs, labels) {
 #' where files will be exported.
 #' @inheritParams debarcoderPrepareFcs
 #' @inheritParams debarcoderUnlabelEvents
-#' @importFrom ggplot2 ggplot aes geom_point scale_x_log10 scale_y_continuous labs theme ggsave
+#' @importFrom ggplot2 ggplot aes geom_point geom_density scale_x_log10 scale_y_continuous labs theme ggsave
 #' @return A list of ggplot objects corresponding to the figures.
 #' @export
 debarcoderPlots <- function(path_prefix, labels) {
