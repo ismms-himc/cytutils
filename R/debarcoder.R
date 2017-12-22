@@ -207,8 +207,12 @@ debarcoderUnlabelEvents <- function(exprs_list,
   unlabel_indices <- which(mahal_ratio <= ratio_thresh)
   labels$Label[unlabel_indices] <- unlabeled_label
 
+  # Add barcoding separation distance, Mahalanobis ratio, and Mahalanobis
+  # distance to labels.
   labels$BcSepDist <- bc_separation_dist
   labels$MahalRatio <- mahal_ratio
+  labels$MahalDistance <- dists_sorted[, 1]
+  
   labels
 }
 
