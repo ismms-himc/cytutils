@@ -212,7 +212,7 @@ debarcoderUnlabelEvents <- function(exprs_list,
   labels$BcSepDist <- bc_separation_dist
   labels$MahalRatio <- mahal_ratio
   labels$MahalDistance <- dists_sorted[, 1]
-  
+
   labels
 }
 
@@ -263,8 +263,8 @@ debarcoderExportDebarcodedFcs <- function(path_prefix, fcs, labels) {
 #' where files will be exported.
 #' @inheritParams debarcoderPrepareFcs
 #' @inheritParams debarcoderUnlabelEvents
-#' @importFrom ggplot2 ggplot aes geom_point geom_density scale_x_log10 scale_y_continuous labs theme ggsave
 #' @return A list of ggplot objects corresponding to the figures.
+#' @import ggplot2
 #' @export
 debarcoderPlots <- function(path_prefix, labels) {
   if (!("BcSepDist" %in% colnames(labels))) stop("labels missing BcSepDist")
