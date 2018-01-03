@@ -201,11 +201,13 @@ debarcoderUnlabelEvents <- function(exprs_list,
   dists <- do.call(cbind, dists)
   dists_sorted <- t(apply(dists, 1, sort))
   mahal_ratio <- dists_sorted[, 2] / dists_sorted[, 1]
+  # Ratio of unlabeled events should be set to null.
+  mahal_ratio[labels$Label == unlabeled_label] <- NA
 
   # Unlabel events whose Mahalanobis ratio is in the suspect range.
-  ratio_thresh <- quantile(mahal_ratio[suspect_indices], threshold_per)
-  unlabel_indices <- which(mahal_ratio <= ratio_thresh)
-  labels$Label[unlabel_indices] <- unlabeled_label
+  ratio_thresh <-
+    quantile(mahal_ratio[suspect_indices], threshold_per, na.rm = TRUE)
+  labels$Label[mahal_ratio <= ratio_thresh] <- unlabeled_label
 
   # Add barcoding separation distance, Mahalanobis ratio, and Mahalanobis
   # distance to labels.
