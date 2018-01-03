@@ -274,7 +274,7 @@ debarcoderPlots <- function(path_prefix, labels) {
 
   codes <- unique(labels$Label)
 
-  xlim <- c(1, max(max(labels$MahalRatio), 10000))
+  xlim <- c(1, max(max(labels$MahalRatio, na.rm = TRUE), 10000))
 
   # Figures: Mahlanobis ratio versus barcoding separation distance, for each
   # code.
