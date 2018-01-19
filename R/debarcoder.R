@@ -69,6 +69,8 @@ debarcoderImportKey <- function(filename) {
 
   # Convert channel values to boolean.
   key[, channels] <- channel_data == 1
+  # Make sure code is always character.
+  key$code <- as.character(key$code)
 
   list(
     key = key,
