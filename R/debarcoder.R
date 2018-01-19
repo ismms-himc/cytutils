@@ -268,7 +268,7 @@ debarcoderExportDebarcodedFcs <- function(path_prefix, fcs, labels) {
 #' @return A list of ggplot objects corresponding to the figures.
 #' @import ggplot2
 #' @export
-debarcoderPlots <- function(path_prefix, labels) {
+debarcoderPlots <- function(path_prefix, labels, exprs_list) {
   if (!("BcSepDist" %in% colnames(labels))) stop("labels missing BcSepDist")
   if (!("MahalRatio" %in% colnames(labels))) stop("labels missing MahalRatio")
 
@@ -309,6 +309,35 @@ debarcoderPlots <- function(path_prefix, labels) {
          x = "Barcoding Separation Distance",
          y = "Density")
 
+  # Figures: Channel intensities for each marker pair.
+  biaxial_fig_names <- c()
+  cells <- dplyr::left_join(labels_u, key$key, by = c("Label" = "code"))
+  cells[is.na(cells)] <- FALSE
+
+  for (ch_x_idx in seq(length(key$channels) - 1)) {
+    ch_x <- key$channels[ch_x_idx]
+
+    for (ch_y_idx in (ch_x_idx + 1):length(key$channels)) {
+      ch_y <- key$channels[ch_y_idx]
+
+      ch_cells <- cells
+      ch_cells$Group <-
+        paste0(ch_x, ifelse(ch_cells[[ch_x]], "+", "-"), " ",
+               ch_y, ifelse(ch_cells[[ch_y]], "+", "-"))
+      ch_cells[[ch_x]] <- exprs_list$exprs[, ch_x]
+      ch_cells[[ch_y]] <- exprs_list$exprs[, ch_y]
+      ch_cells <- dplyr::filter(ch_cells, Label != unlabeled)
+
+      fig_name <- paste0(ch_x, "_vs_", ch_y)
+      biaxial_fig_names <- c(biaxial_fig_names, fig_name)
+      figs[[fig_name]] <-
+        ggplot(ch_cells, aes_string(x = ch_x, y = ch_y)) +
+        geom_point(size = 1, alpha = 0.5) +
+        theme(aspect.ratio = 1) +
+        facet_wrap(~ Group, ncol = 2)
+    }
+  }
+
   # Table: Code counts.
   code_counts <- labels %>%
     dplyr::count(Label) %>%
@@ -329,6 +358,11 @@ debarcoderPlots <- function(path_prefix, labels) {
     for (dist in c("mahalanobis_ratio", "barcoding_separation_distance")) {
       ggsave(file.path(path, paste0(dist, ".jpg")),
              figs[[dist]], width = 4, height = 3)
+    }
+
+    for (fig_name in biaxial_fig_names) {
+      ggsave(file.path(path, paste0("biaxial.", fig_name, ".jpg")),
+             figs[[fig_name]], width = 8, height = 8)
     }
 
     write.csv(code_counts,
@@ -385,7 +419,7 @@ debarcode <- function(fcs_file_path,
 
   if (export_figures) {
     if (verbose) message("exporting plots ...")
-    debarcoderPlots(fcs_file_path, labels)
+    debarcoderPlots(fcs_file_path, labels, exprs_list)
   }
 
   return(labels)
