@@ -271,49 +271,52 @@ debarcoderExportDebarcodedFcs <- function(path_prefix, fcs, labels) {
 #' @import ggplot2
 #' @export
 debarcoderPlots <- function(path_prefix, labels, exprs_list) {
-  if (!("BcSepDist" %in% colnames(labels))) stop("labels missing BcSepDist")
-  if (!("MahalRatio" %in% colnames(labels))) stop("labels missing MahalRatio")
-
   codes <- unique(labels$Label)
 
-  xlim <- c(1, max(max(labels$MahalRatio, na.rm = TRUE), 10000))
+  figs <- list()
 
-  # Figures: Mahlanobis ratio versus barcoding separation distance, for each
-  # code.
-  figs <- lapply(codes, function(code) {
-    code_indices <- which(labels$Label == code)
-    ggplot(labels[code_indices, ], aes(x = MahalRatio, y = BcSepDist)) +
-      geom_point(size = 0, alpha = 0.2) +
+  if ("MahalRatio" %in% colnames(labels)) {
+    xlim <- c(1, max(max(labels$MahalRatio, na.rm = TRUE), 10000))
+
+    # Figures: Mahlanobis ratio versus barcoding separation distance, for each
+    # code.
+    for (code in codes) {
+      code_indices <- which(labels$Label == code)
+
+      figs[[code]] <-
+        ggplot(labels[code_indices, ], aes(x = MahalRatio, y = BcSepDist)) +
+        geom_point(size = 0, alpha = 0.2) +
+        scale_x_log10(limits = xlim) +
+        scale_y_continuous(limits = c(0, 1)) +
+        labs(title = paste0("Debarcoding diagnostic for ", code),
+             x = "log10(Mahalanobis Ratio)",
+             y = "Barcoding Separation Distance") +
+        theme(aspect.ratio = 1)
+    }
+    names(figs) <- codes
+
+    # Figures: Mahalanobis ratio and barcoding separation distance
+    # distributions.
+    figs[["mahalanobis_ratio"]] <-
+      ggplot(labels, aes(x = MahalRatio)) +
+      geom_density(fill = "grey") +
       scale_x_log10(limits = xlim) +
-      scale_y_continuous(limits = c(0, 1)) +
-      labs(title = paste0("Debarcoding diagnostic for ", code),
+      labs(title = "Mahalanobis ratio distribution",
            x = "log10(Mahalanobis Ratio)",
-           y = "Barcoding Separation Distance") +
-      theme(aspect.ratio = 1)
-  })
-  names(figs) <- codes
+           y = "Density")
 
-  # Figures: Mahalanobis ratio and barcoding separation distance
-  # distributions.
-  figs[["mahalanobis_ratio"]] <-
-    ggplot(labels, aes(x = MahalRatio)) +
-    geom_density(fill = "grey") +
-    scale_x_log10(limits = xlim) +
-    labs(title = "Mahalanobis ratio distribution",
-         x = "log10(Mahalanobis Ratio)",
-         y = "Density")
-
-  figs[["barcoding_separation_distance"]] <-
-    ggplot(labels, aes(x = BcSepDist)) +
-    geom_density(fill = "grey") +
-    scale_x_continuous(limits = c(0, 1)) +
-    labs(title = "Barcoding separation distance distribution",
-         x = "Barcoding Separation Distance",
-         y = "Density")
+    figs[["barcoding_separation_distance"]] <-
+      ggplot(labels, aes(x = BcSepDist)) +
+      geom_density(fill = "grey") +
+      scale_x_continuous(limits = c(0, 1)) +
+      labs(title = "Barcoding separation distance distribution",
+           x = "Barcoding Separation Distance",
+           y = "Density")
+  }
 
   # Figures: Channel intensities for each marker pair.
   biaxial_fig_names <- c()
-  cells <- dplyr::left_join(labels_u, key$key, by = c("Label" = "code"))
+  cells <- dplyr::left_join(labels, key$key, by = c("Label" = "code"))
   cells[is.na(cells)] <- FALSE
 
   for (ch_x_idx in seq(length(key$channels) - 1)) {
@@ -352,19 +355,25 @@ debarcoderPlots <- function(path_prefix, labels, exprs_list) {
     if (!file.exists(path)) dir.create(path)
 
     for (code in codes) {
-      ggsave(file.path(path,
-                       paste0("mahalanobis_versus_barcoding.", code, ".jpg")),
-             figs[[code]], width = 4, height = 4)
+      if (!is.null(figs[[code]])) {
+        ggsave(file.path(path,
+                         paste0("mahalanobis_versus_barcoding.", code, ".jpg")),
+               figs[[code]], width = 4, height = 4)
+      }
     }
 
     for (dist in c("mahalanobis_ratio", "barcoding_separation_distance")) {
-      ggsave(file.path(path, paste0(dist, ".jpg")),
-             figs[[dist]], width = 4, height = 3)
+      if (!is.null(figs[[dist]])) {
+        ggsave(file.path(path, paste0(dist, ".jpg")),
+               figs[[dist]], width = 4, height = 3)
+      }
     }
 
     for (fig_name in biaxial_fig_names) {
-      ggsave(file.path(path, paste0("biaxial.", fig_name, ".jpg")),
-             figs[[fig_name]], width = 8, height = 8)
+      if (!is.null(figs[[fig_name]])) {
+        ggsave(file.path(path, paste0("biaxial.", fig_name, ".jpg")),
+               figs[[fig_name]], width = 8, height = 8)
+      }
     }
 
     write.csv(code_counts,
