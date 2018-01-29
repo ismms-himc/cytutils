@@ -4,7 +4,7 @@
 \alias{debarcoderUnlabelEvents}
 \title{Unlabel events.}
 \usage{
-debarcoderUnlabelEvents(exprs_list, labels, key, threshold_per = 0.99,
+debarcoderUnlabelEvents(exprs_list, labels, key,
   unlabeled_label = "unlabeled")
 }
 \arguments{
@@ -14,20 +14,13 @@ debarcoderUnlabelEvents(exprs_list, labels, key, threshold_per = 0.99,
 
 \item{key}{Barcoding key data frame.}
 
-\item{threshold_per}{Percentile for setting distance and ratio thresholds.}
-
 \item{unlabeled_label}{Label for events that don't match any key codes.}
 }
 \value{
 A data frame with a row for every event. Columns are label, barcoding
-separation distance, and Mahalanobis ratio.
+separation distance, Mahalanobis ratio, and Mahalanobis distance.
 }
 \description{
-Identify a set of suspect events whose barcoding separation distance is below
-a given threshold. Then, unlabel events if their Mahalanobis ratio is above
-the threshold set by the suspect events.
-}
-\details{
-Please consult the package documentation for a complete explanation of the
-heuristics involved (TODO).
+Unlabel events if their Mahalanobis ratio is below the valley in the bimodal
+Mahalanobis ratio distribution.
 }

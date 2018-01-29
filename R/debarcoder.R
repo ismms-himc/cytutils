@@ -150,44 +150,29 @@ debarcoderLabelEvents <- function(exprs_list,
 
 #' Unlabel events.
 #'
-#' Identify a set of suspect events whose barcoding separation distance is below
-#' a given threshold. Then, unlabel events if their Mahalanobis ratio is above
-#' the threshold set by the suspect events.
-#'
-#' Please consult the package documentation for a complete explanation of the
-#' heuristics involved (TODO).
+#' Unlabel events if their Mahalanobis ratio is below the valley in the bimodal
+#' Mahalanobis ratio distribution.
 #'
 #' @param labels Data frame with an event label column.
-#' @param threshold_per Percentile for setting distance and ratio thresholds.
 #' @inheritParams debarcoderLabelEvents
 #' @return A data frame with a row for every event. Columns are label, barcoding
-#' separation distance, and Mahalanobis ratio.
+#' separation distance, Mahalanobis ratio, and Mahalanobis distance.
 #' @export
 debarcoderUnlabelEvents <- function(exprs_list,
                                     labels,
                                     key,
-                                    threshold_per = 0.99,
                                     unlabeled_label = "unlabeled") {
   .verifyExprsList(exprs_list)
   if (!is.data.frame(labels)) stop("labels is not a data frame")
   if (is.null(labels$Label)) stop("labels is missing the Label column")
-  if (!is.null(labels$BcSepDist) || !is.null(labels$MahalRatio)) {
+  if (!is.null(labels$MahalRatio)) {
     stop("labels has already been unlabeled")
   }
 
-  # Identify suspect events. First, for each event, find the minimum difference
-  # between all pairs of positive channels. Suspect events have a barcoding
-  # separation distance above the threshold percentile of that distribution.
+  # Calculate barcoding separation distance.
   n_pos <- key$n_pos_channels
-  diffs <- lapply(seq(n_pos - 1), function(pos) {
-    exprs_list$exprs_sorted[, pos] - exprs_list$exprs_sorted[, pos + 1]
-  })
-  diffs <- do.call(cbind, diffs)
-  diffs <- apply(diffs, 1, min)
-  diff_thresh <- quantile(diffs, threshold_per)
   bc_separation_dist <-
     with(exprs_list, exprs_sorted[, n_pos] - exprs_sorted[, n_pos + 1])
-  suspect_indices <- which(bc_separation_dist < diff_thresh)
 
   # Calculate Mahalanobis ratio.
   codes <- sort(setdiff(labels$Label, unlabeled_label))
@@ -206,10 +191,19 @@ debarcoderUnlabelEvents <- function(exprs_list,
   # Ratio of unlabeled events should be set to null.
   mahal_ratio[labels$Label == unlabeled_label] <- NA
 
-  # Unlabel events whose Mahalanobis ratio is in the suspect range.
-  ratio_thresh <-
-    quantile(mahal_ratio[suspect_indices], threshold_per, na.rm = TRUE)
-  labels$Label[mahal_ratio <= ratio_thresh] <- unlabeled_label
+  # Find Mahalanobis ratio local minima and unlabeled events below that value.
+  log10_mahal_ratio <- log10(mahal_ratio)
+  dens <- density(log10_mahal_ratio, n = 128, na.rm = TRUE)
+  local_minima_indices <- which(diff(sign(diff(dens$y))) == 2) + 1
+  local_minima <- dens$x[local_minima_indices]
+  # Threshold is highest local minima which is lower than the median.
+  thresh <-
+    tail(local_minima[local_minima <
+                        median(log10_mahal_ratio, na.rm = TRUE)], 1)
+  if (length(thresh) == 0) {
+    stop("unable to find Mahalanobis ratio local minima")
+  }
+  labels$Label[log10_mahal_ratio < thresh] <- unlabeled
 
   # Add barcoding separation distance, Mahalanobis ratio, and Mahalanobis
   # distance to labels.
