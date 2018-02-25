@@ -4,7 +4,7 @@
 \alias{debarcoderUnlabelEvents}
 \title{Unlabel events.}
 \usage{
-debarcoderUnlabelEvents(exprs_list, labels, key,
+debarcoderUnlabelEvents(exprs_list, labels, key, stern = "off",
   unlabeled_label = "unlabeled")
 }
 \arguments{
@@ -13,6 +13,10 @@ debarcoderUnlabelEvents(exprs_list, labels, key,
 \item{labels}{Data frame with an event label column.}
 
 \item{key}{Barcoding key data frame.}
+
+\item{stern}{Optional parameter for taking a sterner threshold. Lowers the
+amount of debris and doublets but may remove more legitimate cells. Possible
+options are "off" (default), "weak", and "strong".}
 
 \item{unlabeled_label}{Label for events that don't match any key codes.}
 }

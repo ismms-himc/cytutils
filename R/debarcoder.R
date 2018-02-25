@@ -155,18 +155,23 @@ debarcoderLabelEvents <- function(exprs_list,
 #'
 #' @param labels Data frame with an event label column.
 #' @inheritParams debarcoderLabelEvents
+#' @inheritParams debarcode
 #' @return A data frame with a row for every event. Columns are label, barcoding
 #' separation distance, Mahalanobis ratio, and Mahalanobis distance.
 #' @export
 debarcoderUnlabelEvents <- function(exprs_list,
                                     labels,
                                     key,
+                                    stern = "off",
                                     unlabeled_label = "unlabeled") {
   .verifyExprsList(exprs_list)
   if (!is.data.frame(labels)) stop("labels is not a data frame")
   if (is.null(labels$Label)) stop("labels is missing the Label column")
   if (!is.null(labels$MahalRatio)) {
     stop("labels has already been unlabeled")
+  }
+  if (!(stern %in% c("off", "weak", "strong"))) {
+    stop("stern value must be 'off', 'weak', or 'strong'")
   }
 
   # Calculate barcoding separation distance.
@@ -203,6 +208,13 @@ debarcoderUnlabelEvents <- function(exprs_list,
   if (length(thresh) == 0) {
     stop("unable to find Mahalanobis ratio local minima")
   }
+  # Apply stern.
+  if (stern == "weak") {
+    thresh <- thresh * 1.1
+  } else if (stern == "strong") {
+    thresh < thresh + quantile(log10_mahal_ratio, 0.99, na.rm = TRUE) / 10
+  }
+  # Unlabel events below threshold.
   labels$Label[log10_mahal_ratio < thresh] <- unlabeled_label
 
   # Add barcoding separation distance, Mahalanobis ratio, and Mahalanobis
@@ -393,6 +405,9 @@ debarcoderPlots <- function(path_prefix,
 #'
 #' @param fcs_file_path FCS file path.
 #' @param key_file_path CSV barcoding key file path.
+#' @param stern Optional parameter for taking a sterner threshold. Lowers the
+#' amount of debris and doublets but may remove more legitimate cells. Possible
+#' options are "off" (default), "weak", and "strong".
 #' @param export_files If TRUE, the function will export debarcoded FCS files.
 #' @param export_figures If TRUE, the function will export diagnostic plots.
 #' @param verbose If TRUE, the function will message the console with updates.
@@ -401,6 +416,7 @@ debarcoderPlots <- function(path_prefix,
 #' @export
 debarcode <- function(fcs_file_path,
                       key_file_path,
+                      stern = 'off',
                       export_files = TRUE,
                       export_figures = TRUE,
                       verbose = TRUE) {
@@ -418,7 +434,7 @@ debarcode <- function(fcs_file_path,
   exprs_list <- debarcoderPrepareFcs(fcs, key)
   labels <- debarcoderLabelEvents(exprs_list, key)
   if (verbose) message("unlabeling events using heuristics ...")
-  labels <- debarcoderUnlabelEvents(exprs_list, labels, key)
+  labels <- debarcoderUnlabelEvents(exprs_list, labels, key, stern = stern)
 
   if (export_files) {
     if (verbose) message("exporting debarcoded FCS files ...")
