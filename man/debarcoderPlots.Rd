@@ -4,7 +4,8 @@
 \alias{debarcoderPlots}
 \title{Debarcoder diagnostic plots.}
 \usage{
-debarcoderPlots(path_prefix, labels, exprs_list)
+debarcoderPlots(path_prefix, labels, exprs_list,
+  unlabeled_label = "unlabeled")
 }
 \arguments{
 \item{path_prefix}{Either NULL (do not export figures) or prefix to path
@@ -13,6 +14,8 @@ where files will be exported.}
 \item{labels}{Data frame with an event label column.}
 
 \item{exprs_list}{A list with expression and sorted expression matrices.}
+
+\item{unlabeled_label}{Label for events that don't match any key codes.}
 }
 \value{
 A list of ggplot objects corresponding to the figures.

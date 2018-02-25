@@ -203,7 +203,7 @@ debarcoderUnlabelEvents <- function(exprs_list,
   if (length(thresh) == 0) {
     stop("unable to find Mahalanobis ratio local minima")
   }
-  labels$Label[log10_mahal_ratio < thresh] <- unlabeled
+  labels$Label[log10_mahal_ratio < thresh] <- unlabeled_label
 
   # Add barcoding separation distance, Mahalanobis ratio, and Mahalanobis
   # distance to labels.
@@ -264,7 +264,10 @@ debarcoderExportDebarcodedFcs <- function(path_prefix, fcs, labels) {
 #' @return A list of ggplot objects corresponding to the figures.
 #' @import ggplot2
 #' @export
-debarcoderPlots <- function(path_prefix, labels, exprs_list) {
+debarcoderPlots <- function(path_prefix,
+                            labels,
+                            exprs_list,
+                            unlabeled_label = "unlabeled") {
   codes <- unique(labels$Label)
 
   figs <- list()
@@ -325,7 +328,7 @@ debarcoderPlots <- function(path_prefix, labels, exprs_list) {
                ch_y, ifelse(ch_cells[[ch_y]], "+", "-"))
       ch_cells[[ch_x]] <- exprs_list$exprs[, ch_x]
       ch_cells[[ch_y]] <- exprs_list$exprs[, ch_y]
-      ch_cells <- dplyr::filter(ch_cells, Label != unlabeled)
+      ch_cells <- dplyr::filter(ch_cells, Label != unlabeled_label)
 
       fig_name <- paste0(ch_x, "_vs_", ch_y)
       biaxial_fig_names <- c(biaxial_fig_names, fig_name)
