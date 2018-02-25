@@ -4,17 +4,13 @@
 \alias{debarcode}
 \title{Debarcode an FCS file.}
 \usage{
-debarcode(fcs_file_path, key_file_path, stern = "off", export_files = TRUE,
+debarcode(fcs_file_path, key_file_path, export_files = TRUE,
   export_figures = TRUE, verbose = TRUE)
 }
 \arguments{
 \item{fcs_file_path}{FCS file path.}
 
 \item{key_file_path}{CSV barcoding key file path.}
-
-\item{stern}{Optional parameter for taking a sterner threshold. Lowers the
-amount of debris and doublets but may remove more legitimate cells. Possible
-options are "off" (default), "weak", and "strong".}
 
 \item{export_files}{If TRUE, the function will export debarcoded FCS files.}
 

@@ -4,7 +4,7 @@
 \alias{debarcoderPlots}
 \title{Debarcoder diagnostic plots.}
 \usage{
-debarcoderPlots(path_prefix, labels, exprs_list,
+debarcoderPlots(path_prefix, labels, key, exprs_list,
   unlabeled_label = "unlabeled")
 }
 \arguments{
@@ -12,6 +12,8 @@ debarcoderPlots(path_prefix, labels, exprs_list,
 where files will be exported.}
 
 \item{labels}{Data frame with an event label column.}
+
+\item{key}{Barcoding key data frame.}
 
 \item{exprs_list}{A list with expression and sorted expression matrices.}
 

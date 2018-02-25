@@ -280,6 +280,7 @@ debarcoderExportDebarcodedFcs <- function(path_prefix, fcs, labels) {
 #' @export
 debarcoderPlots <- function(path_prefix,
                             labels,
+                            key,
                             exprs_list,
                             unlabeled_label = "unlabeled") {
   codes <- unique(labels$Label)
