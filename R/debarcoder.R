@@ -162,16 +162,12 @@ debarcoderLabelEvents <- function(exprs_list,
 debarcoderUnlabelEvents <- function(exprs_list,
                                     labels,
                                     key,
-                                    stern = "off",
                                     unlabeled_label = "unlabeled") {
   .verifyExprsList(exprs_list)
   if (!is.data.frame(labels)) stop("labels is not a data frame")
   if (is.null(labels$Label)) stop("labels is missing the Label column")
   if (!is.null(labels$MahalRatio)) {
     stop("labels has already been unlabeled")
-  }
-  if (!(stern %in% c("off", "weak", "strong"))) {
-    stop("stern value must be 'off', 'weak', or 'strong'")
   }
 
   # Calculate barcoding separation distance.
@@ -196,7 +192,7 @@ debarcoderUnlabelEvents <- function(exprs_list,
   # Ratio of unlabeled events should be set to null.
   mahal_ratio[labels$Label == unlabeled_label] <- NA
 
-  # Find Mahalanobis ratio local minima and unlabeled events below that value.
+  # Find Mahalanobis ratio local minima and unlabel events below that value.
   log10_mahal_ratio <- log10(mahal_ratio)
   dens <- density(log10_mahal_ratio, n = 128, na.rm = TRUE)
   local_minima_indices <- which(diff(sign(diff(dens$y))) == 2) + 1
@@ -208,14 +204,20 @@ debarcoderUnlabelEvents <- function(exprs_list,
   if (length(thresh) == 0) {
     stop("unable to find Mahalanobis ratio local minima")
   }
-  # Apply stern.
-  if (stern == "weak") {
-    thresh <- thresh * 1.1
-  } else if (stern == "strong") {
-    thresh < thresh + quantile(log10_mahal_ratio, 0.99, na.rm = TRUE) / 10
-  }
   # Unlabel events below threshold.
   labels$Label[log10_mahal_ratio < thresh] <- unlabeled_label
+
+  # Find BC separation distance local minima and unlabel events below it.
+  dens <- density(bc_separation_dist, n = 128, na.rm = TRUE)
+  local_minima_indices <- which(diff(sign(diff(dens$y))) == 2) + 1
+  local_minima <- dens$x[local_minima_indices]
+  thresh <-
+    tail(local_minima[local_minima <
+                        median(bc_separation_dist, na.rm = TRUE)], 1)
+  if (length(thresh) == 0) {
+    stop("unable to find barcoding separation distance local minima")
+  }
+  labels$Label[bc_separation_dist < thresh] <- unlabeled_label
 
   # Add barcoding separation distance, Mahalanobis ratio, and Mahalanobis
   # distance to labels.
@@ -405,9 +407,6 @@ debarcoderPlots <- function(path_prefix,
 #'
 #' @param fcs_file_path FCS file path.
 #' @param key_file_path CSV barcoding key file path.
-#' @param stern Optional parameter for taking a sterner threshold. Lowers the
-#' amount of debris and doublets but may remove more legitimate cells. Possible
-#' options are "off" (default), "weak", and "strong".
 #' @param export_files If TRUE, the function will export debarcoded FCS files.
 #' @param export_figures If TRUE, the function will export diagnostic plots.
 #' @param verbose If TRUE, the function will message the console with updates.
@@ -416,7 +415,6 @@ debarcoderPlots <- function(path_prefix,
 #' @export
 debarcode <- function(fcs_file_path,
                       key_file_path,
-                      stern = 'off',
                       export_files = TRUE,
                       export_figures = TRUE,
                       verbose = TRUE) {
@@ -434,7 +432,7 @@ debarcode <- function(fcs_file_path,
   exprs_list <- debarcoderPrepareFcs(fcs, key)
   labels <- debarcoderLabelEvents(exprs_list, key)
   if (verbose) message("unlabeling events using heuristics ...")
-  labels <- debarcoderUnlabelEvents(exprs_list, labels, key, stern = stern)
+  labels <- debarcoderUnlabelEvents(exprs_list, labels, key)
 
   if (export_files) {
     if (verbose) message("exporting debarcoded FCS files ...")
