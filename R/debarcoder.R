@@ -442,7 +442,7 @@ debarcode <- function(fcs_file_path,
 
   if (export_figures) {
     if (verbose) message("exporting plots ...")
-    debarcoderPlots(fcs_file_path, labels, exprs_list)
+    debarcoderPlots(fcs_file_path, labels, key, exprs_list)
   }
 
   return(labels)
