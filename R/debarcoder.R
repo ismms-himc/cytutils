@@ -260,6 +260,12 @@ debarcoderExportDebarcodedFcs <- function(path_prefix, fcs, labels) {
       code_fcs <- flowCore::flowFrame(e, description = code_fcs@description)
     }
 
+    # Update description with correct filename.
+    filename <- paste0(basename(path_prefix), ".", code, ".fcs")
+    desc <- flowCore::description(code_fcs)
+    desc[["$FIL"]] <- filename
+    flowCore::description(code_fcs) <- desc
+
     flowCore::write.FCS(code_fcs, paste0(path_prefix, ".", code, ".fcs"))
   }
 }
