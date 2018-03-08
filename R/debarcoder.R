@@ -191,33 +191,42 @@ debarcoderUnlabelEvents <- function(exprs_list,
   mahal_ratio <- dists_sorted[, 2] / dists_sorted[, 1]
   # Ratio of unlabeled events should be set to null.
   mahal_ratio[labels$Label == unlabeled_label] <- NA
-
-  # Find Mahalanobis ratio local minima and unlabel events below that value.
   log10_mahal_ratio <- log10(mahal_ratio)
-  dens <- density(log10_mahal_ratio, n = 128, na.rm = TRUE)
-  local_minima_indices <- which(diff(sign(diff(dens$y))) == 2) + 1
-  local_minima <- dens$x[local_minima_indices]
-  # Threshold is highest local minima which is lower than the median.
-  thresh <-
-    tail(local_minima[local_minima <
-                        median(log10_mahal_ratio, na.rm = TRUE)], 1)
-  if (length(thresh) == 0) {
-    stop("unable to find Mahalanobis ratio local minima")
-  }
-  # Unlabel events below threshold.
-  labels$Label[log10_mahal_ratio < thresh] <- unlabeled_label
 
-  # Find BC separation distance local minima and unlabel events below it.
-  dens <- density(bc_separation_dist, n = 128, na.rm = TRUE)
-  local_minima_indices <- which(diff(sign(diff(dens$y))) == 2) + 1
-  local_minima <- dens$x[local_minima_indices]
-  thresh <-
-    tail(local_minima[local_minima <
-                        median(bc_separation_dist, na.rm = TRUE)], 1)
-  if (length(thresh) == 0) {
-    stop("unable to find barcoding separation distance local minima")
+  # Unlabel each code separately.
+  for (code in codes) {
+    code_indices <- which(labels$Label == code)
+
+    # Find Mahalanobis ratio local minima and unlabel events below that value.
+    dens <- density(log10_mahal_ratio[code_indices], n = 128, na.rm = TRUE)
+    local_minima_indices <- which(diff(sign(diff(dens$y))) == 2) + 1
+    local_minima <- dens$x[local_minima_indices]
+    # Threshold is highest local minima which is lower than the median.
+    thresh <-
+      tail(local_minima[local_minima <
+                          median(log10_mahal_ratio, na.rm = TRUE)], 1)
+    if (length(thresh) == 0) {
+      stop("unable to find Mahalanobis ratio local minima")
+    }
+    # Unlabel events below threshold.
+    unlabel_indices <-
+      intersect(code_indices, which(log10_mahal_ratio < thresh))
+    labels$Label[unlabel_indices] <- unlabeled_label
+
+    # Find BC separation distance local minima and unlabel events below it.
+    dens <- density(bc_separation_dist[code_indices], n = 128, na.rm = TRUE)
+    local_minima_indices <- which(diff(sign(diff(dens$y))) == 2) + 1
+    local_minima <- dens$x[local_minima_indices]
+    thresh <-
+      tail(local_minima[local_minima <
+                          median(bc_separation_dist, na.rm = TRUE)], 1)
+    if (length(thresh) == 0) {
+      stop("unable to find barcoding separation distance local minima")
+    }
+    unlabel_indices <-
+      intersect(code_indices, which(bc_separation_dist < thresh))
+    labels$Label[unlabel_indices] <- unlabeled_label
   }
-  labels$Label[bc_separation_dist < thresh] <- unlabeled_label
 
   # Add barcoding separation distance, Mahalanobis ratio, and Mahalanobis
   # distance to labels.
