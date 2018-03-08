@@ -242,13 +242,14 @@ debarcoderUnlabelEvents <- function(exprs_list,
 debarcoderExportDebarcodedFcs <- function(path_prefix, fcs, labels) {
   cols <- setdiff(colnames(labels), "Label")
   codes <- unique(labels$Label)
+  orig_pdata <- flowCore::pData(flowCore::parameters(fcs))
 
   # Export each code in turn.
   for (code in codes) {
     code_indices <- which(labels$Label == code)
     code_fcs <- fcs[code_indices, ]
 
-    # Add any columsn that were involved in labeling.
+    # Add any columns that were involved in labeling.
     if (length(cols) > 0) {
       e <- flowCore::exprs(code_fcs)
 
@@ -258,6 +259,14 @@ debarcoderExportDebarcodedFcs <- function(path_prefix, fcs, labels) {
       }
 
       code_fcs <- flowCore::flowFrame(e, description = code_fcs@description)
+
+      # Do some trickery to make sure that the desc field is correct.
+      params <- flowCore::parameters(code_fcs)
+      pdata <- flowCore::pData(params)
+      pdata$desc <- as.character(pdata$desc)
+      pdata$desc[1:nrow(orig_pdata)] <- as.character(orig_pdata$desc)
+      flowCore::pData(params) <- pdata
+      flowCore::parameters(code_fcs) <- params
     }
 
     # Update description with correct filename.
