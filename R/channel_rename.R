@@ -9,8 +9,11 @@
 #' @param dup_handling How to handle masses with duplicates name or desc.
 #' Options are "stop", "message", and NULL.
 #' @param verbose If TRUE, script will report progress to console.
+#' @param na.mass.rm Remove <NA> mass (TRUE by default)
+#' @param ignore.mass Ignore the mass computation (FALSE by default); if TRUE
+#' the mass column is assigned <NA>
 #' @export
-channelRename <- function(path, dup_handling = "message", verbose = TRUE) {
+channelRename <- function(path, dup_handling = "message", verbose = TRUE, na.mass.rm = TRUE, ignore.mass = FALSE) {
   filenames <- file.path(path, dir(path, "\\.fcs$"))
   if (length(filenames) == 0) stop("could not find any FCS files at given path")
 
@@ -55,7 +58,7 @@ channelRename <- function(path, dup_handling = "message", verbose = TRUE) {
   } else {
     if (verbose) message("Generating a new channel_rename.csv file")
 
-    channels <- importChannelNames(filenames)
+    channels <- importChannelNames(filenames, na.mass.rm, ignore.mass)
 
     # Export CSV.
     channels <- channels[order(channels$mass), ]
