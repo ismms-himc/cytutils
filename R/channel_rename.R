@@ -82,8 +82,11 @@ channelRename <- function(path, dup_handling = "message", verbose = TRUE) {
 #' description.
 #' @param filenames List of FCS file names.
 #' @inheritParams channelRename
+#' @param na.mass.rm Remove <NA> mass (TRUE by default)
+#' @param ignore.mass Ignore the mass computation (FALSE by default); if TRUE
+#' the mass column is assigned <NA>
 #' @export
-importChannelNames <- function(filenames, verbose = TRUE) {
+importChannelNames <- function(filenames, verbose = TRUE, na.mass.rm = TRUE, ignore.mass = FALSE) {
   # Read channel name + desc from FCS headers (don't load entire file) and
   # convert to a data frame.
   channels <- lapply(filenames, function(filename) {
@@ -108,11 +111,21 @@ importChannelNames <- function(filenames, verbose = TRUE) {
 
   # Get mass from channel names.
   mass <- gsub("[^0-9]", "", channels$name)
+  # If mass is ignored, update
+  if (ignore.mass) {
+    mass <- NA
+    na.mass.rm = FALSE
+  }
   channels$mass <- as.integer(mass)
-  channels <- channels[!is.na(channels$mass), ]
+  # NA removal is optionnal but TRUE by default
+  if (na.mass.rm)
+    channels <- channels[!is.na(channels$mass), ]
   channels <- channels[, c("mass", "name", "desc")]
   # Tag masses that have different names or descriptions across files.
   channels$dup <- channels$mass %in% channels$mass[duplicated(channels$mass)]
+  # If mass is ignored, name is looked for duplication
+  if (ignore.mass)
+    channels$dup <- channels$name %in% channels$name[duplicated(channels$name)]
 
   channels
 }
