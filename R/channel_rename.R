@@ -175,35 +175,6 @@ renameFcsFileChannels <- function(dest_path,
     params$keyword <- rownames(params)
     params <- merge(params, channels)
 
-    # Rename each parameter in turn.
-    desc <- fcs@description
-    for (row_idx in seq(nrow(params))) {
-      row <- params[row_idx, ]
-      # Cover all possible venues for name, since it's unclear how flowCore
-      # works. The github source says it's colnames(fcs@exprs) but sometimes
-      # that does not work.
-      colnames(fcs@exprs)[colnames(fcs@exprs) == row$name] <- row$new_name
-      fcs@parameters@data[row$keyword, "name"] <- row$new_name
-      fcs@parameters@data[row$keyword, "desc"] <- row$new_desc
-      desc[paste0(row$keyword, "N")] <- row$new_name
-      desc[paste0(row$keyword, "S")] <- row$new_desc
-    }
-
-    # Mark duplicated descriptions.
-    descs <- fcs@parameters@data$desc
-    descs <- descs[!is.na(descs)]
-    dup_desc_keywords <- names(descs)[which(duplicated(descs))]
-    for (keyword in dup_desc_keywords) {
-      keyword <- gsub("S", "", keyword)
-      new_desc <-
-        paste0(fcs@parameters@data[keyword, "desc"], "_",
-               gsub("\\$", "", keyword))
-      fcs@parameters@data[keyword, "desc"] <- new_desc
-      desc[paste0(keyword, "S")] <- new_desc
-    }
-
-    # Update FlowFrame and export.
-    fcs@description <- desc
     filename <- basename(filename)
     if (suffix != "") {
       dest_filename <-
@@ -211,7 +182,45 @@ renameFcsFileChannels <- function(dest_path,
     } else {
       dest_filename <- file.path(dest_path, filename)
     }
-    if (verbose) message("\t--> ", dest_filename)
-    flowCore::write.FCS(fcs, dest_filename)
+
+    # This if clause prevents bug from occuring if the current fcs file already 
+    # has appropriate channel names and descriptions.
+    if (nrow(params) == 0) {
+      if (verbose) message("\t--> ", dest_filename)
+      flowCore::write.FCS(fcs, dest_filename)
+    } else {
+      # Rename each parameter in turn.
+      desc <- fcs@description
+      for (row_idx in seq(nrow(params))) {
+        row <- params[row_idx, ]
+        # Cover all possible venues for name, since it's unclear how flowCore
+        # works. The github source says it's colnames(fcs@exprs) but sometimes
+        # that does not work.
+        colnames(fcs@exprs)[colnames(fcs@exprs) == row$name] <- row$new_name
+        fcs@parameters@data[row$keyword, "name"] <- row$new_name
+        fcs@parameters@data[row$keyword, "desc"] <- row$new_desc
+        desc[paste0(row$keyword, "N")] <- row$new_name
+        desc[paste0(row$keyword, "S")] <- row$new_desc
+      }
+
+      # Mark duplicated descriptions.
+      descs <- fcs@parameters@data$desc
+      descs <- descs[!is.na(descs)]
+      dup_desc_keywords <- names(descs)[which(duplicated(descs))]
+      for (keyword in dup_desc_keywords) {
+        keyword <- gsub("S", "", keyword)
+        new_desc <-
+          paste0(fcs@parameters@data[keyword, "desc"], "_",
+                 gsub("\\$", "", keyword))
+        fcs@parameters@data[keyword, "desc"] <- new_desc
+        desc[paste0(keyword, "S")] <- new_desc
+      }
+
+      # Update FlowFrame and export.
+      fcs@description <- desc
+
+      if (verbose) message("\t--> ", dest_filename)
+      flowCore::write.FCS(fcs, dest_filename)
+    }
   }
 }
