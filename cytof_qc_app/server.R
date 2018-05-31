@@ -29,17 +29,14 @@ server <- function(input, output, session) {
 
   # This variable is used to control the sequence of processes, 
   # ensuring that we only render success and error messages appropriately
-  sample_background_control_var <- reactiveValues(successful_sample_background_col_completion = FALSE,
+  sample_background_control_var <- reactiveValues(
                 successful_sample_background_report_completion = FALSE,
                 sample_background_report_dir_valid = FALSE,
                 sample_background_report_dir_invalid = FALSE,
                 is_uploaded_file_type_valid = TRUE,
-                is_google_sheet_found = TRUE,
                 fcs_file_import_error = FALSE,
                 pre_processing_error = FALSE,
                 background_report_generation_error = FALSE,
-                google_drive_data_transfer_error = FALSE,
-                entire_sample_background_report_transfer_error = FALSE,
                 aggr_sample_background_report_exists = TRUE,
                 aggr_sample_background_report_export_error = FALSE,
                 aggr_sample_background_report_export_success = FALSE
@@ -48,9 +45,6 @@ server <- function(input, output, session) {
   sample_background_file_statuses <- reactiveValues(unsuccessful_fcs_file_import_filenames = "",
                 unsuccessful_pre_processing_filenames = "",
                 unsuccessful_report_generation_filenames = "",
-                unsuccessful_google_drive_data_transfer_filenames = "",
-                unsuccessful_entire_sample_background_report_transfer_filenames = "",
-                successful_sample_background_col_completion_filenames = "",
                 successful_sample_background_report_completion_filenames = "",
                 sample_background_report_dir = "")
 

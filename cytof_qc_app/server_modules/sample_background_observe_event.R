@@ -45,12 +45,10 @@ shinyDirChoose(input, id = "sample_background_report_dir", roots = c(home = '~')
       # We reset the reactive values of our sample_background_control_var so that our error 
       # messages fade when the user attempts to re-upload files.
       sample_background_control_var$is_uploaded_file_type_valid <- TRUE
-      sample_background_control_var$successful_sample_background_col_completion <- FALSE
       sample_background_control_var$successful_sample_background_report_completion <- FALSE
       sample_background_control_var$fcs_file_import_error <- FALSE
       sample_background_control_var$pre_processing_error <- FALSE
       sample_background_control_var$background_report_generation_error <- FALSE
-      sample_background_control_var$entire_sample_background_report_transfer_error <- FALSE
       sample_background_control_var$aggr_sample_background_report_exists <- TRUE
       sample_background_control_var$aggr_sample_background_report_export_error <- FALSE
       sample_background_control_var$aggr_sample_background_report_export_success <- FALSE
@@ -62,8 +60,6 @@ shinyDirChoose(input, id = "sample_background_report_dir", roots = c(home = '~')
       sample_background_file_statuses$unsuccessful_pre_processing_filenames <- ""
       sample_background_file_statuses$unsuccessful_report_generation_filenames <- ""
       sample_background_file_statuses$unsuccessful_fcs_file_import_filenames <- ""
-      sample_background_file_statuses$unsuccessful_entire_sample_background_report_transfer_filenames <- ""
-      sample_background_file_statuses$successful_sample_background_col_completion_filenames <- ""
       sample_background_file_statuses$successful_sample_background_report_completion_filenames <- ""
     }
 
