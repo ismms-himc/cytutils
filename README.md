@@ -257,3 +257,9 @@ calculateMultiChannelAof(channel_population_relationships_filepath,
 # 2     Nd142Di 0.007091019
 
 ```
+
+## Sample Background App
+
+A user interface for performing sample background tracking is available.
+
+[screenshot]: cytof_qc_app/docs/sample_background_app_screenshot.png
