@@ -277,6 +277,7 @@ install.packages("dplyr")
 install.packages("ggplot2")
 install.packages("robustbase")
 install.packages("flowCore")
+install.packages("matrixStats")
 ```
 3. Clone or download a copy of this repository
 
