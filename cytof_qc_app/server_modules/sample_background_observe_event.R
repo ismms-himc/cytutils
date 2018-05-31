@@ -198,9 +198,6 @@ shinyDirChoose(input, id = "sample_background_report_dir", roots = c(home = '~')
         }
 
         sample_background_report_all <- rbind(sample_background_report_all, sample_background_report)
-
-
-        # TODO NEXT: Confirm why background_data_filename is NA in UI output
         sample_background_file_statuses$successful_sample_background_report_completion_filenames <- c(sample_background_file_statuses$successful_sample_background_report_completion_filenames, 
                                                                   background_data_filename)
 
@@ -228,18 +225,3 @@ shinyDirChoose(input, id = "sample_background_report_dir", roots = c(home = '~')
     })
   })
 }
-
-
-        # if (send_entire_sample_background_report_transfer_status == "Unsuccessful") {
-        #   sample_background_control_var$entire_sample_background_report_transfer_error <- TRUE
-        #   sample_background_file_statuses$unsuccessful_entire_sample_background_report_transfer_filenames <- c(sample_background_file_statuses$unsuccessful_entire_sample_background_report_transfer_filenames, 
-        #                           background_data_filename)
-        # } else {
-          # We only need to add successes if the previous google drive data transfer
-          # to the "sample BCKG" column of the "samples" tab failed. Otherwise,
-          # names would appear twice in the UI.
-          # sample_background_control_var$successful_sample_background_report_completion <- TRUE
-          # sample_background_file_statuses$successful_sample_background_report_completion_filenames <- c(sample_background_file_statuses$successful_sample_background_report_completion_filenames, 
-                                                                            # background_data_filename)
-
-        # }
