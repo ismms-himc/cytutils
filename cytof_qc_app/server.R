@@ -1,4 +1,4 @@
-# Configuration:
+# Required packages:
 # install.packages("shiny")
 # install.packages("shinydashboard")
 # install.packages("shinyFiles")
@@ -54,7 +54,7 @@ server <- function(input, output, session) {
                 successful_sample_background_report_completion_filenames = "",
                 sample_background_report_dir = "")
 
-  # NB: The below are sourced from "./server_modules". They handle the logic of 
+  # The below are sourced from "./server_modules". They handle the logic of 
   # what occurs when a file is uploaded or an actionButton is clicked.
   sample_background_observe_event(input, sample_background_control_var, sample_background_file_statuses)
 
@@ -159,57 +159,6 @@ server <- function(input, output, session) {
     }
   })
 
-
-
-  output$sample_background_report_successful_completions <- renderUI({
-    success_message <- vector("list")
-    if (sample_background_control_var$successful_sample_background_report_completion & 
-      length(sample_background_file_statuses$successful_sample_background_col_completion_filenames) != length(sample_background_file_statuses$successful_sample_background_report_completion_filenames)) {
-      for (i in 1:length(sample_background_file_statuses$successful_sample_background_report_completion_filenames)) {
-        if (i == 1) {
-          success_message[[i]] <- list(
-            div(style = "color: green; font-size: 14px; margin: 5px; padding-top: 15px;",
-              p(paste("Success. Background data from the uploaded",
-              "file(s) has been added to the sample background report:"))
-            )
-          )
-        } else {
-          success_message[[i]] <- list(
-            tags$li(style = "color: green; font-size: 14px; margin: 5px; padding-left: 30px;", 
-              sample_background_file_statuses$successful_sample_background_report_completion_filenames[i])
-          )
-        }
-      }
-    }
-
-    success_message
-  })
-
-  output$sample_background_report_successful_completions <- renderUI({
-    success_message <- vector("list")
-    if (sample_background_control_var$successful_sample_background_report_completion & 
-      length(sample_background_file_statuses$successful_sample_background_col_completion_filenames) != length(sample_background_file_statuses$successful_sample_background_report_completion_filenames)) {
-      for (i in 1:length(sample_background_file_statuses$successful_sample_background_report_completion_filenames)) {
-        if (i == 1) {
-          success_message[[i]] <- list(
-            div(style = "color: green; font-size: 14px; margin: 5px; padding-top: 15px;",
-              p(paste("Success. Background data from the uploaded",
-              "file(s) has been added to the sample background report:"))
-            )
-          )
-        } else {
-          success_message[[i]] <- list(
-            tags$li(style = "color: green; font-size: 14px; margin: 5px; padding-left: 30px;", 
-              sample_background_file_statuses$successful_sample_background_report_completion_filenames[i])
-          )
-        }
-      }
-    }
-
-    success_message
-  })
-
-
   output$sample_background_report_export_status <- renderUI({
     if (sample_background_control_var$aggr_sample_background_report_export_error) {
       p(paste("Error: There was an error exporting the sample background report.",
@@ -217,6 +166,7 @@ server <- function(input, output, session) {
         style = "color: red; font-size: 14px; margin: 10px;")
     } else if (sample_background_control_var$aggr_sample_background_report_export_success) {
       success_message <- vector("list")
+
       for (i in 1:length(sample_background_file_statuses$successful_sample_background_report_completion_filenames)) {
           if (i == 1) {
             success_message[[i]] <- list(
@@ -228,59 +178,12 @@ server <- function(input, output, session) {
           } else {
             success_message[[i]] <- list(
               tags$li(style = "color: green; font-size: 14px; margin: 5px; padding-left: 30px;", 
-                sample_background_file_statuses$successful_sample_background_col_completion_filenames[i])
+                sample_background_file_statuses$successful_sample_background_report_completion_filenames[i])
             )
           }
       }
+
       success_message
     }
   })
 }
-
-
-        # sample_background_file_statuses$successful_sample_background_report_completion_filenames <- c(sample_background_file_statuses$successful_sample_background_report_completion_filenames, 
-        #                                                           background_data_filename)
-
-
-  # output$sample_background_col_successful_completions <- renderUI({
-  #   success_message <- vector("list")
-  #   if (sample_background_control_var$successful_sample_background_col_completion) {
-  #     if (sample_background_control_var$successful_sample_background_report_completion & 
-  #             length(sample_background_file_statuses$successful_sample_background_col_completion_filenames) == length(sample_background_file_statuses$successful_sample_background_report_completion_filenames)) {
-  #       for (i in 1:length(sample_background_file_statuses$successful_sample_background_col_completion_filenames)) {
-  #         if (i == 1) {
-  #           success_message[[i]] <- list(
-  #             div(style = "color: green; font-size: 14px; margin: 5px; padding-top: 15px;",
-  #               p(paste("Success. Background data from the uploaded",
-  #               "file(s) has been exported."
-  #               ))
-  #             )
-  #           )
-  #         } else {
-  #           success_message[[i]] <- list(
-  #             tags$li(style = "color: green; font-size: 14px; margin: 5px; padding-left: 30px;", 
-  #               sample_background_file_statuses$successful_sample_background_col_completion_filenames[i])
-  #           )
-  #         }
-  #       }
-  #     } else {
-        #   for (i in 1:length(sample_background_file_statuses$successful_sample_background_col_completion_filenames)) {
-        #     if (i == 1) {
-        #       success_message[[i]] <- list(
-        #         div(style = "color: green; font-size: 14px; margin: 5px; padding-top: 15px;",
-        #           p(paste("Success. Background data from the uploaded",
-        #           "file(s) has been exported."))
-        #         )
-        #       )
-        #     } else {
-        #       success_message[[i]] <- list(
-        #         tags$li(style = "color: green; font-size: 14px; margin: 5px; padding-left: 30px;", 
-        #           sample_background_file_statuses$successful_sample_background_col_completion_filenames[i])
-        #       )
-        #     }
-        #   }
-        # }
-  #   }
-
-  #   success_message
-  # })
