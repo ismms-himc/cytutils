@@ -261,7 +261,67 @@ calculateMultiChannelAof(channel_population_relationships_filepath,
 ## Sample Background App
 
 A user interface for performing sample background tracking is available.
+This interface allows users to upload FCS files and export a sample background report. Please reference the `sample_background_report.csv` file found under 
+`cytof_qc_app/docs/sample_background_report.csv` for 
+
+### App Installation & Setup Instructions
+1. Install R and RStudio
+2. Install R package dependencies by running the following in an R session:
+
+```r
+install.packages("shiny")
+install.packages("shinydashboard")
+install.packages("shinyFiles")
+install.packages("mclust")
+install.packages("dplyr")
+install.packages("ggplot2")
+install.packages("robustbase")
+install.packages("flowCore")
+```
+3. Clone or download a copy of this repository
+
+### App Use Instructions
+In this example, the repository was cloned to the `~/Desktop/` directory.
+
+1. Open RStudio, change working directory to the `cytof_qc_app` location, load
+the R package `shiny`, and run the application:
+
+```r
+setwd("~/Desktop/cytutils/cytof_qc_app")
+library(shiny)
+runApp()
+```
+
+The application will launch and you will see an interface similar to the following:
 
 ![screenshot_img][screenshot]
+
+2. Select the directory you would like to export the sample background report to
+by clicking the `Choose directory` button.
+
+3. Upload one or multiple FCS files by clicking the `Browse...` button.
+
+To select multiple files, hold the `Ctrl` key while clicking the files. Then click
+`Open`.
+
+A progress bar will appear on the lower-right corner.
+
+Success or error messages will appear in the main panel in green and red text, 
+respectively.
+
+If successful, a csv file containing sample background information for the uploaded
+files. If only some of the FCS files were successfully processed, the csv file
+will still be exported; however, it will only include the files that succeeded.
+
+
+
+
+
+
+
+
+
+
+
 
 [screenshot]: cytof_qc_app/docs/sample_background_app_screenshot.png
