@@ -262,4 +262,6 @@ calculateMultiChannelAof(channel_population_relationships_filepath,
 
 A user interface for performing sample background tracking is available.
 
+![screenshot_img][screenshot]
+
 [screenshot]: cytof_qc_app/docs/sample_background_app_screenshot.png
