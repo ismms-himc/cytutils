@@ -26,6 +26,22 @@ fcs_import_file_error_handler <- function(filename) {
   )
 }
 
+fcs_find_channels <- function(fcs_data, channels) {
+  fcs_data_channels <- colnames(fcs_data)
+
+  unlist(
+    lapply(channels, function(channel) {
+      channel <- fcs_data_channels[grepl(channel, fcs_data_channels)]
+
+      if (length(channel) != 1) {
+        stop(paste0("unable to find one match for ", channel))
+      }
+      
+      channel
+    })
+  )
+}
+
 mass_cytometry_pre_processing <- function(
   fcs_data, cofactor, event_channel, dna_channel, bead_gates,
   debris_num_gmms = 10, debris_gmm_subsample_n = 1000, debris_vote_thresh = 0.5,
