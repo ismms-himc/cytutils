@@ -261,8 +261,14 @@ calculateMultiChannelAof(channel_population_relationships_filepath,
 ## Sample Background App
 
 A user interface for performing sample background tracking is available.
-This interface allows users to upload FCS files and export a sample background report. Please reference the `sample_background_report.csv` file found under 
-`cytof_qc_app/docs/sample_background_report.csv` for 
+This interface allows users to upload FCS files and export a sample background report. 
+
+The uploaded FCS files will undergo a pre-processing step that identifies beads, 
+doublets, and debris. A sample background report is then generated and includes 
+total event, total cell, and median channel values.
+
+Please reference the `sample_background_report.csv` file found under 
+`cytof_qc_app/docs/sample_background_report.csv` for an example report.
 
 ### App Installation & Setup Instructions
 1. Install R and RStudio
