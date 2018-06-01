@@ -317,18 +317,9 @@ Success or error messages will appear in the main panel in green and red text,
 respectively.
 
 If successful, a csv file containing sample background information for the uploaded
-files. If only some of the FCS files were successfully processed, the csv file
-will still be exported; however, it will only include the files that succeeded.
-
-
-
-
-
-
-
-
-
-
+files will be exported. If only some of the FCS files were successfully processed, 
+the csv file will still be exported; however, it will only include the files that 
+were successfully processed.
 
 
 [screenshot]: cytof_qc_app/docs/sample_background_app_screenshot.png
