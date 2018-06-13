@@ -32,7 +32,6 @@ fcs_find_channels <- function(fcs_data, channels) {
   unlist(
     lapply(channels, function(channel) {
       channel <- fcs_data_channels[grepl(channel, fcs_data_channels)]
-      print(paste("CHANNEL: ", channel))
 
       if (length(channel) != 1) {
         stop(paste0("unable to find one match for ", channel))
@@ -53,7 +52,6 @@ fcs_find_gating_channels <- function(fcs_data, channels) {
         channel <- NA
       }
 
-      print(paste("fcs_find_gating_channels end CHANNEL:", channel))
       channel
     })
   )
@@ -68,11 +66,8 @@ mass_cytometry_pre_processing <- function(
  
   # find the explicit channel name for each mass
   fcs_event_channel <- fcs_find_channels(fcs_data, event_channel)
-  print(fcs_event_channel)
   fcs_dna_channel <- fcs_find_channels(fcs_data, dna_channel)
-  print(fcs_dna_channel)
   fcs_bead_channels <- fcs_find_channels(fcs_data, bead_gates$channel)
-  print(fcs_bead_channels)
   # transform the data and add an index for later tracking
   gating_data <- fcs_data[, c(fcs_event_channel,
                               fcs_dna_channel,
@@ -215,7 +210,6 @@ generate_sample_background_report <- function(background_fcs_data,
 
   # colMedians works with NA values.
   gating_data_channel_medians <- matrixStats::colMedians(gating_channels_data_matrix)
-  View(gating_data_channel_medians)
   sample_background_report <-
     dplyr::data_frame(
       `Sample Background Report Timestamp` = sample_background_report_timestamp,

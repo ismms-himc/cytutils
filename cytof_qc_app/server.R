@@ -41,9 +41,6 @@ server <- function(input, output, session) {
                 background_report_generation_success = FALSE,
                 sample_background_report_export_success = FALSE,
                 sample_background_report_export_error = FALSE,
-                # aggr_sample_background_report_exists = TRUE,
-                # aggr_sample_background_report_export_error = FALSE,
-                # aggr_sample_background_report_export_success = FALSE,
                 is_output_dir_chosen_before_upload = TRUE
                 )
 
@@ -51,7 +48,6 @@ server <- function(input, output, session) {
                 unsuccessful_pre_processing_filenames = "",
                 unsuccessful_report_generation_filenames = "",
                 successful_report_generation_filenames = "",
-                # successful_sample_background_report_completion_filenames = "",
                 sample_background_report_dir = "",
                 successful_report_export_filenames = "",
                 unsuccessful_report_export_filenames = "")
@@ -156,41 +152,6 @@ server <- function(input, output, session) {
 
     error_message
   })
-
-  # output$aggr_sample_background_report_generation_errors <- renderUI({
-  #   if (!sample_background_control_var$aggr_sample_background_report_exists) {
-  #     p(paste("Error: A sample background report was not successfully generated",
-  #       "for any uploaded files and thus, there was no sample background report to export."),
-  #       style = "color: red; font-size: 14px; margin: 10px;")
-  #   }
-  # })
-
-  # output$sample_background_report_export_status <- renderUI({
-  #   if (sample_background_control_var$aggr_sample_background_report_export_error) {
-  #     p("Error: There was an error exporting the sample background report.",
-  #       style = "color: red; font-size: 14px; margin: 10px;")
-  #   } else if (sample_background_control_var$aggr_sample_background_report_export_success) {
-  #     success_message <- vector("list")
-
-  #     for (i in 1:length(sample_background_file_statuses$successful_sample_background_report_completion_filenames)) {
-  #         if (i == 1) {
-  #           success_message[[i]] <- list(
-  #             div(style = "color: green; font-size: 14px; margin: 5px; padding-top: 15px;",
-  #               p(paste("Success. Sample background report exported to chosen location.",
-  #               "Report includes data from the following file(s):"))
-  #             )
-  #           )
-  #         } else {
-  #           success_message[[i]] <- list(
-  #             tags$li(style = "color: green; font-size: 14px; margin: 5px; padding-left: 30px;", 
-  #               sample_background_file_statuses$successful_sample_background_report_completion_filenames[i])
-  #           )
-  #         }
-  #     }
-
-  #     success_message
-  #   }
-  # })
 
   output$sample_background_report_export_errors <- renderUI({
     error_message <- vector("list")

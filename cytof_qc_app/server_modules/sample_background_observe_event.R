@@ -53,9 +53,6 @@ shinyDirChoose(input, id = "sample_background_report_dir", roots = c(home = '~')
         sample_background_control_var$pre_processing_error <- FALSE
         sample_background_control_var$background_report_generation_error <- FALSE
         sample_background_control_var$background_report_generation_success <- FALSE
-        # sample_background_control_var$aggr_sample_background_report_exists <- TRUE
-        # sample_background_control_var$aggr_sample_background_report_export_error <- FALSE
-        # sample_background_control_var$aggr_sample_background_report_export_success <- FALSE
         sample_background_control_var$sample_background_report_export_success <- FALSE
         sample_background_control_var$sample_background_report_export_error <- FALSE
         sample_background_control_var$is_output_dir_chosen_before_upload <- TRUE
@@ -82,83 +79,6 @@ shinyDirChoose(input, id = "sample_background_report_dir", roots = c(home = '~')
       }
 
       withProgress(value = 0, {
-
-        # sample_background_report_all <- data.frame(matrix(ncol = 73, nrow = 0))
-        # cols <- c("Sample Background Report Timestamp", 
-        #           "Filename", 
-        #           "Start Time",
-        #           "End Time",
-        #           "Total Events",
-        #           "Total Cells",
-        #           "Y89 Median",
-        #           "Nb93 Median",
-        #           "Pd102 Median",
-        #           "Rh103 Median",
-        #           "Pd104 Median",
-        #           "Pd105 Median",
-        #           "Pd106 Median",
-        #           "Pd108 Median",
-        #           "Pd110 Median",
-        #           "In113 Median",
-        #           "In115 Median",
-        #           "Sn120 Median",
-        #           "I127 Median",
-        #           "Xe131 Median",
-        #           "Cs133 Median",
-        #           "Ba138 Median",
-        #           "Ce140 Median",
-        #           "La139 Median",
-        #           "Pr141 Median",
-        #           "Nd142 Median",
-        #           "Ce142 Median",
-        #           "Nd143 Median",
-        #           "Nd144 Median",
-        #           "Nd145 Median",
-        #           "Nd146 Median",
-        #           "Sm147 Median",
-        #           "Nd148 Median",
-        #           "Sm149 Median",
-        #           "Nd150 Median",
-        #           "Eu151 Median",
-        #           "Sm152 Median",
-        #           "Eu153 Median",
-        #           "Sm154 Median",
-        #           "Gd155 Median",
-        #           "Gd156 Median",
-        #           "Gd158 Median",
-        #           "Tb159 Median",
-        #           "Gd160 Median",
-        #           "Dy161 Median",
-        #           "Dy162 Median",
-        #           "Dy163 Median",
-        #           "Dy164 Median",
-        #           "Ho165 Median",
-        #           "Er166 Median",
-        #           "Er167 Median",
-        #           "Er168 Median",
-        #           "Tm169 Median",
-        #           "Er170 Median",
-        #           "Yb171 Median",
-        #           "Yb172 Median",
-        #           "Yb173 Median",
-        #           "Yb174 Median",
-        #           "Lu175 Median",
-        #           "Lu176 Median",
-        #           "Yb176 Median",
-        #           "Ta181 Median",
-        #           "Os189 Median",
-        #           "Ir191 Median",
-        #           "Os192 Median",
-        #           "Ir193 Median",
-        #           "Pt194 Median",
-        #           "Pt195 Median",
-        #           "Pt196 Median",
-        #           "Pt198 Median",
-        #           "Pb208 Median",
-        #           "Bi209 Median",
-        #           "Sum of Medians"
-        #         )
-        # colnames(sample_background_report_all) <- cols
 
         for (i in 1:num_files_uploaded) {
           incProgress(amount = (1 / num_files_uploaded), 
@@ -220,33 +140,9 @@ shinyDirChoose(input, id = "sample_background_report_dir", roots = c(home = '~')
                                                                                       background_data_filename)
           }          
 
-
-
-
-
-
-
-
           rm(background_fcs_data_pre_processing,
               sample_background_report)
         }
-
-        # if (nrow(sample_background_report_all) > 0) {
-        #   # sample_background_report_export_status <- sample_background_report_export_error_handler(
-        #   #                                                     sample_background_file_statuses$sample_background_report_dir,
-        #   #                                                     sample_background_report_all)
-
-        #   # if (is.null(sample_background_report_export_status)) {
-        #   #   sample_background_control_var$aggr_sample_background_report_export_success <- TRUE
-
-        #   # } else if (sample_background_report_export_status == "Unsuccessful"){
-        #   #   sample_background_control_var$aggr_sample_background_report_export_error <- TRUE
-        #   # }
-        # } else {
-        #   # A background report was not successfully generated for any of our samples
-        #   # and thus, there is no report to export.
-        #   sample_background_control_var$aggr_sample_background_report_exists <- FALSE
-        # }
       })
     }
   })
