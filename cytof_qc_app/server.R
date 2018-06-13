@@ -38,16 +38,23 @@ server <- function(input, output, session) {
                 fcs_file_import_error = FALSE,
                 pre_processing_error = FALSE,
                 background_report_generation_error = FALSE,
-                aggr_sample_background_report_exists = TRUE,
-                aggr_sample_background_report_export_error = FALSE,
-                aggr_sample_background_report_export_success = FALSE
+                background_report_generation_success = FALSE,
+                sample_background_report_export_success = FALSE,
+                sample_background_report_export_error = FALSE,
+                # aggr_sample_background_report_exists = TRUE,
+                # aggr_sample_background_report_export_error = FALSE,
+                # aggr_sample_background_report_export_success = FALSE,
+                is_output_dir_chosen_before_upload = TRUE
                 )
 
   sample_background_file_statuses <- reactiveValues(unsuccessful_fcs_file_import_filenames = "",
                 unsuccessful_pre_processing_filenames = "",
                 unsuccessful_report_generation_filenames = "",
-                successful_sample_background_report_completion_filenames = "",
-                sample_background_report_dir = "")
+                successful_report_generation_filenames = "",
+                # successful_sample_background_report_completion_filenames = "",
+                sample_background_report_dir = "",
+                successful_report_export_filenames = "",
+                unsuccessful_report_export_filenames = "")
 
   # The below are sourced from "./server_modules". They handle the logic of 
   # what occurs when a file is uploaded or an actionButton is clicked.
@@ -55,7 +62,11 @@ server <- function(input, output, session) {
 
 ################### Sample Background App Outputs #############################
   output$sample_background_report_dir_selection_status <- renderUI({
-    if (sample_background_control_var$sample_background_report_dir_invalid) {
+    if (!sample_background_control_var$is_output_dir_chosen_before_upload) {
+        p(paste("Target location for sample background report must be chosen prior",
+         "to uploading FCS files."),
+        style = "color: red; font-size: 14px; margin: 10px;")
+    } else if (sample_background_control_var$sample_background_report_dir_invalid) {
       p(paste("Error: Invalid target location for sample background report chosen. Please ",
         "try again."),
         style = "color: red; font-size: 14px; margin: 10px;")
@@ -63,7 +74,7 @@ server <- function(input, output, session) {
         p(paste("Target location for sample background report successfully chosen. Proceed by",
          "uploading FCS files."),
         style = "color: green; font-size: 14px; margin: 10px;")
-    }
+    } 
   })
 
   output$sample_background_invalid_file_type <- renderUI({
@@ -146,39 +157,84 @@ server <- function(input, output, session) {
     error_message
   })
 
-  output$aggr_sample_background_report_generation_errors <- renderUI({
-    if (!sample_background_control_var$aggr_sample_background_report_exists) {
-      p(paste("Error: A sample background report was not successfully generated",
-        "for any uploaded files and thus, there was no sample background report to export."),
-        style = "color: red; font-size: 14px; margin: 10px;")
+  # output$aggr_sample_background_report_generation_errors <- renderUI({
+  #   if (!sample_background_control_var$aggr_sample_background_report_exists) {
+  #     p(paste("Error: A sample background report was not successfully generated",
+  #       "for any uploaded files and thus, there was no sample background report to export."),
+  #       style = "color: red; font-size: 14px; margin: 10px;")
+  #   }
+  # })
+
+  # output$sample_background_report_export_status <- renderUI({
+  #   if (sample_background_control_var$aggr_sample_background_report_export_error) {
+  #     p("Error: There was an error exporting the sample background report.",
+  #       style = "color: red; font-size: 14px; margin: 10px;")
+  #   } else if (sample_background_control_var$aggr_sample_background_report_export_success) {
+  #     success_message <- vector("list")
+
+  #     for (i in 1:length(sample_background_file_statuses$successful_sample_background_report_completion_filenames)) {
+  #         if (i == 1) {
+  #           success_message[[i]] <- list(
+  #             div(style = "color: green; font-size: 14px; margin: 5px; padding-top: 15px;",
+  #               p(paste("Success. Sample background report exported to chosen location.",
+  #               "Report includes data from the following file(s):"))
+  #             )
+  #           )
+  #         } else {
+  #           success_message[[i]] <- list(
+  #             tags$li(style = "color: green; font-size: 14px; margin: 5px; padding-left: 30px;", 
+  #               sample_background_file_statuses$successful_sample_background_report_completion_filenames[i])
+  #           )
+  #         }
+  #     }
+
+  #     success_message
+  #   }
+  # })
+
+  output$sample_background_report_export_errors <- renderUI({
+    error_message <- vector("list")
+    if (sample_background_control_var$sample_background_report_export_error) {
+      for (i in 1:length(sample_background_file_statuses$unsuccessful_report_export_filenames)) {
+        if (i == 1) {
+          error_message[[i]] <- list(
+            div(style = "color: red; font-size: 14px; margin: 5px; padding-top: 15px;",
+              p(paste("Error: Sample background report export failed for the",
+              "following files:"))
+            )
+          )
+        } else {
+          error_message[[i]] <- list(
+            tags$li(style = "color: red; font-size: 14px; margin: 5px; padding-left: 30px;", 
+              sample_background_file_statuses$unsuccessful_report_export_filenames[i])
+          )
+        }
+      }
     }
+
+    error_message
   })
 
-  output$sample_background_report_export_status <- renderUI({
-    if (sample_background_control_var$aggr_sample_background_report_export_error) {
-      p(paste("Error: There was an error exporting the sample background report.",
-        "Please ensure the chosen report export location exists."),
-        style = "color: red; font-size: 14px; margin: 10px;")
-    } else if (sample_background_control_var$aggr_sample_background_report_export_success) {
-      success_message <- vector("list")
-
-      for (i in 1:length(sample_background_file_statuses$successful_sample_background_report_completion_filenames)) {
-          if (i == 1) {
-            success_message[[i]] <- list(
-              div(style = "color: green; font-size: 14px; margin: 5px; padding-top: 15px;",
-                p(paste("Success. Sample background report exported to chosen location.",
-                "Report includes data from the following file(s):"))
-              )
+  output$sample_background_report_export_successes <- renderUI({
+    success_message <- vector("list")
+    if (sample_background_control_var$sample_background_report_export_success) {
+      for (i in 1:length(sample_background_file_statuses$successful_report_export_filenames)) {
+        if (i == 1) {
+          success_message[[i]] <- list(
+            div(style = "color: green; font-size: 14px; margin: 5px; padding-top: 15px;",
+              p(paste("Success: Sample background reports were exported for the",
+              "following files:"))
             )
-          } else {
-            success_message[[i]] <- list(
-              tags$li(style = "color: green; font-size: 14px; margin: 5px; padding-left: 30px;", 
-                sample_background_file_statuses$successful_sample_background_report_completion_filenames[i])
-            )
-          }
+          )
+        } else {
+          success_message[[i]] <- list(
+            tags$li(style = "color: green; font-size: 14px; margin: 5px; padding-left: 30px;", 
+              sample_background_file_statuses$successful_report_export_filenames[i])
+          )
+        }
       }
-
-      success_message
     }
+
+    success_message
   })
 }
