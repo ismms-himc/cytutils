@@ -32,6 +32,7 @@ fcs_find_channels <- function(fcs_data, channels) {
   unlist(
     lapply(channels, function(channel) {
       channel <- fcs_data_channels[grepl(channel, fcs_data_channels)]
+      print(paste("CHANNEL: ", channel))
 
       if (length(channel) != 1) {
         stop(paste0("unable to find one match for ", channel))
@@ -42,18 +43,36 @@ fcs_find_channels <- function(fcs_data, channels) {
   )
 }
 
+fcs_find_gating_channels <- function(fcs_data, channels) {
+  fcs_data_channels <- colnames(fcs_data)
+  unlist(
+    lapply(channels, function(channel) {
+      channel <- fcs_data_channels[grepl(channel, fcs_data_channels)]
+
+      if (identical(channel, character(0))) {
+        channel <- NA
+      }
+
+      print(paste("fcs_find_gating_channels end CHANNEL:", channel))
+      channel
+    })
+  )
+}
+
 mass_cytometry_pre_processing <- function(
   fcs_data, cofactor, event_channel, dna_channel, bead_gates,
   debris_num_gmms = 10, debris_gmm_subsample_n = 1000, debris_vote_thresh = 0.5,
   verbose = TRUE) {
 
-    
   start_t <- proc.time()
  
   # find the explicit channel name for each mass
   fcs_event_channel <- fcs_find_channels(fcs_data, event_channel)
+  print(fcs_event_channel)
   fcs_dna_channel <- fcs_find_channels(fcs_data, dna_channel)
+  print(fcs_dna_channel)
   fcs_bead_channels <- fcs_find_channels(fcs_data, bead_gates$channel)
+  print(fcs_bead_channels)
   # transform the data and add an index for later tracking
   gating_data <- fcs_data[, c(fcs_event_channel,
                               fcs_dna_channel,
@@ -152,43 +171,60 @@ generate_sample_background_report <- function(background_fcs_data,
                               background_fcs_data_pre_processing, 
                               cofactor) {
   sample_background_report_timestamp <- Sys.time()
-
   gating_data <- background_fcs_data$data[background_fcs_data_pre_processing$gating_data$index, ]
-  gating_data_channel_names <- colnames(gating_data)
-  gating_data_channel_names <- tail(gating_data_channel_names, length(gating_data_channel_names) - 2)
-  gating_data_channel_names <- gsub(".{5}$", "", gating_data_channel_names)
-  
-  # We manually fix the channel names for Ir191Di_DNA and Ir193Di_DNA to avoid
-  # a trailing "D" in the channel name (i.e. Ir191D)
-  gating_data_channel_names[58] <- "Ir191"
-  gating_data_channel_names[60] <- "Ir193"
 
-  num_gating_channels <- length(gating_data_channel_names)
+  # We use a set template for channel names, filling in NA whenever the channel
+  # does not exist in an FCS file.
+  gating_data_channel_names <- c("Y89", "Nb93", "Pd102", "Rh103", "Pd104", 
+                                  "Pd105", "Pd106", "Pd108", "Pd110", "In113", 
+                                  "In115", "Sn120", "I127" , "Xe131", "Cs133", 
+                                  "Ba138", "La139", "Ce140", "Pr141", "Nd142",
+                                  "Ce142", "Nd143", "Nd144", "Nd145", "Nd146",
+                                  "Sm147", "Nd148", "Sm149", "Nd150", "Eu151",
+                                  "Sm152", "Eu153", "Sm154", "Gd155", "Gd156",
+                                  "Gd158", "Tb159", "Gd160", "Dy161", "Dy162",
+                                  "Dy163", "Dy164", "Ho165", "Er166", "Er167",
+                                  "Er168", "Tm169", "Er170", "Yb171", "Yb172",
+                                  "Yb173", "Yb174", "Lu175", "Lu176", "Yb176", 
+                                  "Ta181", "Os189", "Ir191", "Os192", "Ir193",
+                                  "Pt194", "Pt195", "Pt196", "Pt198", "Pb208",
+                                  "Bi209")
 
+  num_gating_channels <- 66
+
+  # We use Ce140 below since we know it is a standard bead channel and should
+  # always be present.
   num_gating_channels_data_matrix_rows <- length(gating_data[[fcs_find_channels(gating_data, 
-                                            "Y89")]])
+                                            "Ce140")]])
 
-  # Note: Pre-determining # of rows as per below assumes that each channel has the 
-  # same number of entries.
-  gating_channels_data_matrix <- matrix(nrow = num_gating_channels_data_matrix_rows, ncol = 66)
+  gating_channels_data_matrix <- matrix(nrow = num_gating_channels_data_matrix_rows, 
+                                        ncol = num_gating_channels)
+
   colnames(gating_channels_data_matrix) <- gating_data_channel_names
 
   # Vector of data for each channel.
   for (i in 1:num_gating_channels) {
-    current_channel_gating_data <- gating_data[[fcs_find_channels(gating_data, gating_data_channel_names[i])]]
-    gating_channels_data_matrix[, i] <- current_channel_gating_data
+    current_channel_gating_data <- gating_data[[fcs_find_gating_channels(gating_data, gating_data_channel_names[i])]]
+
+    if (is.null(current_channel_gating_data)) {
+      gating_channels_data_matrix[, i] <- NA
+    } else {
+      gating_channels_data_matrix[, i] <- current_channel_gating_data
+    }
   }
 
+  # colMedians works with NA values.
   gating_data_channel_medians <- matrixStats::colMedians(gating_channels_data_matrix)
+  View(gating_data_channel_medians)
   sample_background_report <-
     dplyr::data_frame(
       `Sample Background Report Timestamp` = sample_background_report_timestamp,
       Filename = background_fcs_data_filename,
       `Start Time` =
-        paste0(background_fcs_data$obj@description$`$DATE`, " ",
+        paste(background_fcs_data$obj@description$`$DATE`, 
                background_fcs_data$obj@description$`$BTIM`),
       `End Time` =
-        paste0(background_fcs_data$obj@description$`$DATE`, " ",
+        paste(background_fcs_data$obj@description$`$DATE`,
                background_fcs_data$obj@description$`$ETIM`),
       `Total Events` = nrow(background_fcs_data$data),
       `Total Cells` = nrow(gating_data),
@@ -258,7 +294,7 @@ generate_sample_background_report <- function(background_fcs_data,
       `Pt198 Median` = median(gating_channels_data_matrix[, 'Pt198']),
       `Pb208 Median` = median(gating_channels_data_matrix[, 'Pb208']),
       `Bi209 Median` = median(gating_channels_data_matrix[, 'Bi209']),
-      `Sum of Medians` = sum(gating_data_channel_medians)
+      `Sum of Medians` = sum(gating_data_channel_medians, na.rm = TRUE)
     )
 }
 
@@ -276,13 +312,13 @@ generate_sample_background_report_error_handler <- function(background_fcs_data,
 
 
 sample_background_report_export_error_handler <- function(sample_background_report_dir_path,
-                                                            sample_background_report_all) {
-  filepath <- paste0(sample_background_report_dir_path, "/sample_background_report.csv")
-  tryCatch(write.csv(sample_background_report_all, 
+                                                            sample_background_report,
+                                                            fcs_filename) {
+  filepath <- paste0(sample_background_report_dir_path, "/", fcs_filename, "_sample_background_report.csv")
+  tryCatch(write.csv(sample_background_report, 
                       filepath),
     error = function(e) { "Unsuccessful" })
 }
-
 
 # http://jeromyanglim.tumblr.com/post/33418725712/how-to-source-all-r-files-in-a-directory
 source_dir <- function(path, trace = TRUE, ...) {
