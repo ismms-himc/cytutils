@@ -31,9 +31,9 @@ sample_background_app_tab_item <-  tabItem(tabName = "sample_background_app",
           htmlOutput("sample_background_fcs_file_import_errors"),
           htmlOutput("sample_background_pre_processing_errors"),
           htmlOutput("sample_background_report_generation_errors"),
-          htmlOutput("aggr_sample_background_report_generation_errors"),
+          # htmlOutput("aggr_sample_background_report_generation_errors"),
           htmlOutput("sample_background_report_successful_completions"),
-          htmlOutput("sample_background_report_export_status")
-
+          htmlOutput("sample_background_report_export_successes"),
+          htmlOutput("sample_background_report_export_errors")
         )
       )
