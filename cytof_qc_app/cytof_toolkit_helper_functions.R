@@ -310,7 +310,7 @@ sample_background_report_export_error_handler <- function(sample_background_repo
                                                             fcs_filename) {
   filepath <- paste0(sample_background_report_dir_path, "/", fcs_filename, "_sample_background_report.csv")
   tryCatch(write.csv(sample_background_report, 
-                      filepath),
+                      filepath, row.names = FALSE),
     error = function(e) { "Unsuccessful" })
 }
 
@@ -396,7 +396,7 @@ qc_report_export_error_handler <- function(cytof_qc_report_dir_path,
                                                             fcs_filename) {
   filepath <- paste0(cytof_qc_report_dir_path, "/", fcs_filename, "_cytof_qc_report.csv")
   tryCatch(write.csv(qc_report, 
-                      filepath),
+                      filepath, row.names = FALSE),
     error = function(e) { "Unsuccessful" })
 }
 
@@ -445,9 +445,31 @@ flag_abnormal_gating_in_exported_qc_report <- function(abnormal_gating_filename,
 
   qc_report <- read.csv(filepath)
   qc_report$Abnormal.Gating <- 'True'
-  write.csv(qc_report, filepath)
+  write.csv(qc_report, filepath, row.names = FALSE)
 
   # We implicitly return "Successful" so that abnormal_gating_flag_transfer_status
   # is not undefined if we reach the end of the function without raising an error.
   "Successful"
 }
+
+
+unflag_abnormal_gating_in_previously_exported_qc_report_error_handler <- function(normal_gating_filename,
+                                                                      cytof_qc_report_dir) {
+ tryCatch(unflag_abnormal_gating_in_previously_exported_qc_report(normal_gating_filename, cytof_qc_report_dir),
+    error = function(e) { "Unsuccessful" }
+  )
+}
+
+unflag_abnormal_gating_in_previously_exported_qc_report <- function(normal_gating_filename, cytof_qc_report_dir) {
+  filepath <- paste0(cytof_qc_report_dir, "/", normal_gating_filename, "_cytof_qc_report.csv")
+
+  qc_report <- read.csv(filepath)
+  qc_report$Abnormal.Gating <- 'False'
+  write.csv(qc_report, filepath, row.names = FALSE)
+
+  # We implicitly return "Successful" so that abnormal_gating_flag_transfer_status
+  # is not undefined if we reach the end of the function without raising an error.
+  "Successful"
+}
+
+
