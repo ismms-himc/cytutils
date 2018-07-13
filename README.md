@@ -386,5 +386,5 @@ manual gates.
 [app_launch_screenshot]: cytof_qc_app/docs/app_launch_screenshot.png
 [sample_bckg_success_screenshot]: cytof_qc_app/docs/sample_background_tracking_success.png
 [sample_bckg_success_screenshot]: cytof_qc_app/docs/sample_background_tracking_success.png
-[cytof_qc_file_upload_success_screenshot]: cytof_qc_report_file_upload_screenshot.png
-[cytof_qc_gating_screenshot]: cytof_qc_report_gating_screenshot.png
+[cytof_qc_file_upload_success_screenshot]: cytof_qc_app/docs/cytof_qc_report_file_upload_screenshot.png
+[cytof_qc_gating_screenshot]: cytof_qc_app/docs/cytof_qc_report_gating_screenshot.png
