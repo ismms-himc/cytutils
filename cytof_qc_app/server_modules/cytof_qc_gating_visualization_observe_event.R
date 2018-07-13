@@ -24,6 +24,8 @@ cytof_qc_gating_visualization_observe_event <- function(input, output, session, 
 	    searchable_data_frames <- cytof_qc_gating_inspection$pre_processed_data
 
 	    for (i in 1:length(searchable_data_frames)) {
+	    	cat("length")
+	    	cat(length(searchable_data_frames))
 	    	if (searchable_data_frames[[i]]$filename == gating_filename) {
 			    target_gating_visualization_data_frame <- searchable_data_frames[[i]]
 			    break
