@@ -264,6 +264,12 @@ This R/Shiny application includes two features, sample background tracking and Q
 report generation, detailed in the `Features` section below. Please note: The app
 is not currently hosted online; however, it can be used locally.
 
+This app operates under the following assumptions:
+- marker-containing channel names include `Di`
+- DNA-containing channel names include `191Di`
+- bead-contaning channel names include the following: `140Di`, `175Di`
+
+
 ### App Installation & Setup Instructions
 1. Install R and RStudio
 2. Install R package dependencies by running the following in an R session:
@@ -299,7 +305,6 @@ The application will launch and you will see an interface similar to the followi
 
 Note the two tabs on the left correspond to the two main features of the application.
 
-
 ### Features
 #### Sample Background Tracking
 
@@ -310,11 +315,7 @@ The uploaded FCS files will undergo a pre-processing step that identifies beads,
 doublets, and debris. A sample background report is then generated and includes 
 total event, total cell, and median channel values.
 
-Median values for all channels present in the FCS file will be reported. This app
-works with the assumption of the following:
-- marker-containing channel names include `Di`
-- DNA-containing channel names include `191Di`
-- bead-contaning channel names include the following: `140Di`, `175Di`
+Median values for all channels present in the FCS file will be reported.
 
 Please reference the `sample_background_report.csv` file found under 
 `cytof_qc_app/docs/sample_background_report.csv` for an example report.
@@ -343,12 +344,47 @@ If a sample was not successfully processed, a csv file will not be exported for
 the file. However, this will not affect export of sample background report files
 for successfully processed files.
 
-
 #### CyTOF QC Report Generator
 
+This interface allows users to upload FCS files and export a separate cytof 
+qc report per file.
 
+The uploaded FCS files will undergo a pre-processing step that identifies beads, 
+doublets, and debris. A cytof qc report is then generated and includes 
+total event, total cell, total bead, median Oxide %, and more.
 
+Please reference the `cytof_qc_report.csv` file found under 
+`cytof_qc_app/docs/cytof_qc_report.csv` for an example report.
+
+##### Feature Use Instructions
+
+1. Select the directory you would like to export the sample background report to
+by clicking the `Choose directory` button.
+
+2. Upload one or multiple FCS files by clicking the `Browse...` button.
+![cytof_qc_file_upload_success_screenshot_img][cytof_qc_file_upload_success_screenshot]
+
+3. A `Gating Inspection` section will render on the lower half of the screen. Select
+the file you would like to visualize gates for and click the `Generate Gating Visualization`
+button.
+
+4. If the gating visualization looks abnormal, click the `Flag Abnormal Gating`
+button. Note: This action can be undone by clicking `Undo Abnormal Gating Flag`.
+Doing either will update the `Abnormal Gating` column of the exported QC report.
+
+5. You may manually adjust the gating by clicking and dragging on the gating visualization
+plot. Then select the population type from the drop down (i.e. cell, bead, debris)
+and click `Update Gating`.
+
+6. When you are satisfied with how the plot looks, click the `Update QC Report` 
+button to update the previously exported QC report with new values based on your 
+manual gates.
+
+![cytof_qc_gating_screenshot_img][cytof_qc_gating_screenshot]
 
 
 [app_launch_screenshot]: cytof_qc_app/docs/app_launch_screenshot.png
 [sample_bckg_success_screenshot]: cytof_qc_app/docs/sample_background_tracking_success.png
+[sample_bckg_success_screenshot]: cytof_qc_app/docs/sample_background_tracking_success.png
+[cytof_qc_file_upload_success_screenshot]: cytof_qc_report_file_upload_screenshot.png
+[cytof_qc_gating_screenshot]: cytof_qc_report_gating_screenshot.png
