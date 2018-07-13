@@ -102,7 +102,7 @@ server <- function(input, output, session) {
   cytof_qc_gating_visualization_observe_event(input, output, session, cytof_qc_control_var, cytof_qc_gating_inspection)
   flag_abnormal_gating_observe_event(input, cytof_qc_gating_inspection, cytof_qc_control_var, cytof_qc_file_statuses)
   unflag_abnormal_gating_observe_event(input, cytof_qc_control_var, cytof_qc_file_statuses)
-  # cytof_qc_manually_update_gating_observe_event(input, output, session, cytof_qc_control_var, cytof_qc_file_statuses, cytof_qc_gating_inspection)
+  cytof_qc_manually_update_gating_observe_event(input, output, session, cytof_qc_control_var, cytof_qc_file_statuses, cytof_qc_gating_inspection)
   # cytof_qc_generate_updated_qc_report_observe_event(input, output, cytof_qc_control_var, cytof_qc_file_statuses, cytof_qc_gating_inspection)
   sample_background_observe_event(input, sample_background_control_var, sample_background_file_statuses)
 ################### CyTOF QC Feature Outputs #############################
@@ -360,45 +360,45 @@ server <- function(input, output, session) {
               cytof_qc_file_statuses$unsuccessful_abnormal_gating_unflag_filename)
         )
     }
-    
+
     status_message
   })
 
-  # # We a section to allow the user to manually adjust gating after the user
-  # # successfully flags gating as abnormal.
-  # output$manual_gating <- renderUI({
-  #   if (cytof_qc_control_var$render_manual_gating) {
-  #     div(
-  #       h4("Manually Adjust Abnormal Gating"),
-  #       p(paste("Click and drag on the plot to gate a population. Select a",
-  #       "category to assign the population to:")),
-  #       selectInput(inputId = "manual_gating_category",
-  #                   label = "Reclassify Selection As:",
-  #                   choices = c("bead", "cell", "debris")),
-  #       actionButton(inputId = "manually_update_gating",
-  #                   label = "Update Gating",
-  #                   icon = icon("wrench"))  
-  #     )
-  #   }
-  # })
+  # We allow the user to manually adjust gating after the user
+  # successfully flags gating as abnormal.
+  output$manual_gating <- renderUI({
+    if (cytof_qc_control_var$render_manual_gating) {
+      div(
+        h4("Manually Adjust Abnormal Gating"),
+        p(paste("Click and drag on the plot to gate a population. Select a",
+        "category to assign the population to:")),
+        selectInput(inputId = "manual_gating_category",
+                    label = "Reclassify Selection As:",
+                    choices = c("bead", "cell", "debris")),
+        actionButton(inputId = "manually_update_gating",
+                    label = "Update Gating",
+                    icon = icon("wrench"))  
+      )
+    }
+  })
 
-  # output$update_gating_status_message <- renderUI({
-  #   # We check if cytof_qc_control_var$render_manual_gating to avoid rendering status
-  #   # messages in the case that a user generated a gating visualization for a different
-  #   # file and did not yet flag it as having abnormal gating.
-  #   if (cytof_qc_control_var$render_manual_gating){
-  #     if (cytof_qc_control_var$manual_gating_error) {
-  #       p(paste("Error: Gating not updated. Please click and drag on the plot to",
-  #         "gate a population. Please also ensure the desired population is",
-  #         "completely within manually created gate boundaries."),
-  #         style = "color: red; font-size: 12px; margin: 5px; padding-top: 15px;"
-  #       )
+  output$update_gating_status_message <- renderUI({
+    # We check if cytof_qc_control_var$render_manual_gating to avoid rendering status
+    # messages in the case that a user generated a gating visualization for a different
+    # file and did not yet flag it as having abnormal gating.
+    if (cytof_qc_control_var$render_manual_gating){
+      if (cytof_qc_control_var$manual_gating_error) {
+        p(paste("Error: Gating not updated. Please click and drag on the plot to",
+          "gate a population. Please also ensure the desired population is",
+          "completely within manually created gate boundaries."),
+          style = "color: red; font-size: 12px; margin: 5px; padding-top: 15px;"
+        )
 
-  #     } else if (cytof_qc_control_var$manual_gating_success) {
-  #         p("Success: Gating updated.", style = "color: green; font-size: 12px; margin: 5px; padding-top: 15px;")
-  #     }
-  #   }
-  # })
+      } else if (cytof_qc_control_var$manual_gating_success) {
+          p("Success: Gating updated.", style = "color: green; font-size: 12px; margin: 5px; padding-top: 15px;")
+      }
+    }
+  })
 
   # output$update_qc_report <- renderUI({
   #   # We check if cytof_qc_control_var$render_manual_gating to avoid rendering
