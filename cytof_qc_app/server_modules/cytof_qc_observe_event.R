@@ -150,9 +150,7 @@ cytof_qc_observe_event <- function(input, cytof_qc_control_var, cytof_qc_file_st
             next
           }
 
-          View(qc_report)
 
-          # TODO: remove this if not used
           qc_report_all$fcs_filename <- qc_report
 
           qc_report_export_status <- qc_report_export_error_handler(

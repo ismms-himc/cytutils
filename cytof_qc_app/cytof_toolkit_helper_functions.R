@@ -331,7 +331,7 @@ rcv <- function(x) {
              (quantile(x, 0.8413) - quantile(x, 0.1587)) / median(x))
 }
 
-generate_qc_report <- function(fcs_data,  fcs_filename, fcs_data_pre_processing, cofactor, qc_reporter_version) {
+generate_qc_report <- function(fcs_data,  fcs_filename, fcs_data_pre_processing, cofactor, qc_reporter_version, ab_gate = "False") {
   qc_report_timestamp <- Sys.time()
   gating_data <- fcs_data$data[fcs_data_pre_processing$gating_data$index, ]
   bead_data <- fcs_data$data[fcs_data_pre_processing$bead_data$index, ]
@@ -346,7 +346,6 @@ generate_qc_report <- function(fcs_data,  fcs_filename, fcs_data_pre_processing,
   bead_gd156 <- bead_data[[fcs_find_channels(bead_data, "Gd156")]]
   bead_lu175 <- bead_data[[fcs_find_channels(bead_data, "Lu175")]]
   bead_lu176 <- bead_data[[fcs_find_channels(bead_data, "Lu176")]]
-  ab_gate_default <- "False"
 
   qc_report <-
     dplyr::data_frame(
@@ -373,7 +372,7 @@ generate_qc_report <- function(fcs_data,  fcs_filename, fcs_data_pre_processing,
       `Lu175 Median` = median(bead_lu175),
       `Lu176 Median` = median(bead_lu176),
       `Ratio Lu175/Lu176` = `Lu175 Median` / `Lu176 Median`,
-      `Abnormal Gating` = ab_gate_default
+      `Abnormal Gating` = ab_gate
     )
 }
 
@@ -381,12 +380,14 @@ generate_qc_report_error_handler <- function(fcs_data,
                                             fcs_filename, 
                                             fcs_data_pre_processing,
                                             cofactor,
-                                            qc_reporter_version) {
+                                            qc_reporter_version,
+                                            ab_gate = "False") {
   tryCatch(generate_qc_report(fcs_data, 
                         fcs_filename, 
                         fcs_data_pre_processing,
                         cofactor,
-                        qc_reporter_version),
+                        qc_reporter_version,
+                        ab_gate),
     error = function(e) { NULL }
   )
 }
@@ -473,3 +474,23 @@ unflag_abnormal_gating_in_previously_exported_qc_report <- function(normal_gatin
 }
 
 
+reformat_manually_gated_pre_processed_data <- function(pre_processed_manually_gated_data) {
+  bead_data_rows <- which(pre_processed_manually_gated_data$category == "bead")
+  # We do not remove the category and/or filename columns added after initially
+  # running mass_cytometry_pre_processing because they do not affect QC report
+  # generation.
+  bead_data <- pre_processed_manually_gated_data[bead_data_rows, ]
+
+  debris_data_rows <- which(pre_processed_manually_gated_data$category == "debris")
+  debris_data <- pre_processed_manually_gated_data[debris_data_rows, ]
+
+  gating_data_rows <- which(pre_processed_manually_gated_data$category == "cell")
+  gating_data <- pre_processed_manually_gated_data[gating_data_rows, ]
+
+  list(
+    bead_data = bead_data,
+    debris_data = debris_data,
+    gating_data = gating_data,
+    cell_indices = gating_data$index
+  )
+}

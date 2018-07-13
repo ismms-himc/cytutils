@@ -47,7 +47,9 @@ server <- function(input, output, session) {
                 manual_gating_success = FALSE,
                 updated_qc_report_generation_error = FALSE,
                 qc_report_export_success = FALSE,
-                qc_report_export_error = FALSE
+                qc_report_export_error = FALSE,
+                updated_qc_report_export_error = FALSE,
+                updated_qc_report_export_success = FALSE
               )
 
   cytof_qc_file_statuses <- reactiveValues(cytof_qc_report_dir = "",
@@ -61,7 +63,9 @@ server <- function(input, output, session) {
                 successful_abnormal_gating_unflag_filename = "",
                 unsuccessful_updated_qc_report_filename = "",
                 successful_report_export_filenames = "",
-                unsuccessful_report_export_filenames = ""
+                unsuccessful_report_export_filenames = "",
+                successful_updated_qc_report_export_filename = "",
+                unsuccessful_updated_qc_report_export_filename = ""
               )
 
   # This variable is used to control the sequence of processes, 
@@ -103,7 +107,7 @@ server <- function(input, output, session) {
   flag_abnormal_gating_observe_event(input, cytof_qc_gating_inspection, cytof_qc_control_var, cytof_qc_file_statuses)
   unflag_abnormal_gating_observe_event(input, cytof_qc_control_var, cytof_qc_file_statuses)
   cytof_qc_manually_update_gating_observe_event(input, output, session, cytof_qc_control_var, cytof_qc_file_statuses, cytof_qc_gating_inspection)
-  # cytof_qc_generate_updated_qc_report_observe_event(input, output, cytof_qc_control_var, cytof_qc_file_statuses, cytof_qc_gating_inspection)
+  cytof_qc_generate_updated_qc_report_observe_event(input, output, cytof_qc_control_var, cytof_qc_file_statuses, cytof_qc_gating_inspection)
   sample_background_observe_event(input, sample_background_control_var, sample_background_file_statuses)
 ################### CyTOF QC Feature Outputs #############################
 
@@ -141,7 +145,7 @@ server <- function(input, output, session) {
             div(style = "color: red; font-size: 14px; margin: 5px; padding-top: 15px;",
               p(paste("Error: The following file(s) failed the file import",
               "step. As such, pre-processing, QC report generation, and data",
-              "transfer to Google Drive did not occur:"))
+              "export did not occur:"))
             )
           )
         } else {
@@ -278,8 +282,8 @@ server <- function(input, output, session) {
           uiOutput("manual_gating"),
           htmlOutput("update_gating_status_message"),
           uiOutput("update_qc_report"),
-          htmlOutput("generate_updated_qc_report_error_message")
-          # htmlOutput("transfer_updated_qc_report_to_google_drive_status_message")
+          htmlOutput("generate_updated_qc_report_error_message"),
+          htmlOutput("export_updated_qc_report_status_message")
         )
       )     
     }
@@ -400,80 +404,80 @@ server <- function(input, output, session) {
     }
   })
 
-  # output$update_qc_report <- renderUI({
-  #   # We check if cytof_qc_control_var$render_manual_gating to avoid rendering
-  #   # a prompt for an updated QC report in case a user generates a gating 
-  #   # visualization for a different file without flagging it as having abnormal gating.
-  #   if (cytof_qc_control_var$render_manual_gating & cytof_qc_control_var$manual_gating_success) {
-  #     div(
-  #       tags$hr(style = "border-color: #C0C0C0; margin: 35px 0px 27px 0px"),
-  #       h4("Satisfactory Gating?"),
-  #         p("If yes, please click below to generate an updated QC report and send",
-  #           "it to Google Drive. Otherwise, please continue to update gating."),
-  #         actionButton(inputId = "generate_updated_qc_report",
-  #               label = "Update QC Report", 
-  #               icon = icon("check-circle"),
-  #               style = "margin-top: 7px;")
-  #     )
-  #   }
-  # })
+  output$update_qc_report <- renderUI({
+    # We check if cytof_qc_control_var$render_manual_gating to avoid rendering
+    # a prompt for an updated QC report in case a user generates a gating 
+    # visualization for a different file without flagging it as having abnormal gating.
+    if (cytof_qc_control_var$render_manual_gating & cytof_qc_control_var$manual_gating_success) {
+      div(
+        tags$hr(style = "border-color: #C0C0C0; margin: 35px 0px 27px 0px"),
+        h4("Satisfactory Gating?"),
+          p("If yes, please click below to generate an update the exported QC report.",
+            "Otherwise, please continue to update gating."),
+          actionButton(inputId = "generate_updated_qc_report",
+                label = "Update QC Report", 
+                icon = icon("check-circle"),
+                style = "margin-top: 7px;")
+      )
+    }
+  })
 
-  # output$generate_updated_qc_report_error_message <- renderUI({
-  #   status_message <- vector("list")
+  output$generate_updated_qc_report_error_message <- renderUI({
+    status_message <- vector("list")
 
-  #   if (cytof_qc_control_var$render_manual_gating & cytof_qc_control_var$updated_qc_report_generation_error) {
-  #     status_message[[1]] <- list(
-  #           div(style = "color: red; font-size: 12px; margin: 5px; padding-top: 15px;",
-  #             p(paste("Error: An updated QC report was not generated for the",
-  #             "following file:")
-  #             )
-  #           )
-  #         )
-  #     status_message[[2]] <- list(
-  #         tags$li(style = "color: red; font-size: 12px; margin: 5px; padding-left: 30px;", 
-  #             cytof_qc_file_statuses$unsuccessful_updated_qc_report_filename)
-  #       )
-  #   }
+    if (cytof_qc_control_var$render_manual_gating & cytof_qc_control_var$updated_qc_report_generation_error) {
+      status_message[[1]] <- list(
+            div(style = "color: red; font-size: 12px; margin: 5px; padding-top: 15px;",
+              p(paste("Error: An updated QC report was not generated for the",
+              "following file:")
+              )
+            )
+          )
+      status_message[[2]] <- list(
+          tags$li(style = "color: red; font-size: 12px; margin: 5px; padding-left: 30px;", 
+              cytof_qc_file_statuses$unsuccessful_updated_qc_report_filename)
+        )
+    }
 
-  #   status_message
-  # })
+    status_message
+  })
 
-  # output$transfer_updated_qc_report_to_google_drive_status_message <- renderUI({
-  #   status_message <- vector("list")
-  #   # We check if cytof_qc_control_var$render_manual_gating to avoid rendering status
-  #   # messages in the case that a user generated a gating visualization for a different
-  #   # file and did not yet flag it as having abnormal gating.
-  #   if (cytof_qc_control_var$render_manual_gating){
-  #     if (cytof_qc_control_var$google_drive_updated_qc_report_transfer_error) {
-  #       status_message[[1]] <- list(
-  #           div(style = "color: red; font-size: 12px; margin: 5px; padding-top: 15px;",
-  #             p(paste("Error: An updated QC report was not sent to Google Drive",
-  #             "for the following file:")
-  #             )
-  #           )
-  #         )
-  #     status_message[[2]] <- list(
-  #         tags$li(style = "color: red; font-size: 12px; margin: 5px; padding-left: 30px;", 
-  #             cytof_qc_file_statuses$unsuccessful_google_drive_updated_qc_report_transfer_filename)
-  #       )
-  #     } else if (cytof_qc_control_var$google_drive_updated_qc_report_transfer_success) {
-  #        status_message[[1]] <- list(
-  #           div(style = "color: green; font-size: 12px; margin: 5px; padding-top: 15px;",
-  #             p(paste("Success. An updated QC report was generated and sent to",
-  #             "Google Drive for the following file:")
-  #             )
-  #           )
-  #         )
+  output$export_updated_qc_report_status_message <- renderUI({
+    status_message <- vector("list")
+    # We check if cytof_qc_control_var$render_manual_gating to avoid rendering status
+    # messages in the case that a user generated a gating visualization for a different
+    # file and did not yet flag it as having abnormal gating.
+    if (cytof_qc_control_var$render_manual_gating){
+      if (cytof_qc_control_var$updated_qc_report_export_error) {
+        status_message[[1]] <- list(
+            div(style = "color: red; font-size: 12px; margin: 5px; padding-top: 15px;",
+              p(paste("Error: An updated QC report was not sent exported",
+              "for the following file:")
+              )
+            )
+          )
+      status_message[[2]] <- list(
+          tags$li(style = "color: red; font-size: 12px; margin: 5px; padding-left: 30px;", 
+              cytof_qc_file_statuses$unsuccessful_updated_qc_report_export_filename)
+        )
+      } else if (cytof_qc_control_var$updated_qc_report_export_success) {
+         status_message[[1]] <- list(
+            div(style = "color: green; font-size: 12px; margin: 5px; padding-top: 15px;",
+              p(paste("Success. An updated QC report was generated and exported",
+              "for the following file:")
+              )
+            )
+          )
 
-  #       status_message[[2]] <- list(
-  #           tags$li(style = "color: green; font-size: 12px; margin: 5px; padding-left: 30px;", 
-  #               cytof_qc_file_statuses$successful_google_drive_updated_qc_report_transfer_filename)
-  #         )
-  #     }
-  #   }
+        status_message[[2]] <- list(
+            tags$li(style = "color: green; font-size: 12px; margin: 5px; padding-left: 30px;", 
+                cytof_qc_file_statuses$successful_updated_qc_report_export_filename)
+          )
+      }
+    }
 
-  #   status_message
-  # })
+    status_message
+  })
 
 
 
