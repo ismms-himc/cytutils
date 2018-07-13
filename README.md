@@ -258,17 +258,11 @@ calculateMultiChannelAof(channel_population_relationships_filepath,
 
 ```
 
-## Sample Background App
+## CyTOF QC App
 
-A user interface for performing sample background tracking is available.
-This interface allows users to upload FCS files and export a sample background report. 
-
-The uploaded FCS files will undergo a pre-processing step that identifies beads, 
-doublets, and debris. A sample background report is then generated and includes 
-total event, total cell, and median channel values.
-
-Please reference the `sample_background_report.csv` file found under 
-`cytof_qc_app/docs/sample_background_report.csv` for an example report.
+This R/Shiny application includes two features, sample background tracking and QC 
+report generation, detailed in the `Features` section below. Please note: The app
+is not currently hosted online; however, it can be used locally.
 
 ### App Installation & Setup Instructions
 1. Install R and RStudio
@@ -287,7 +281,7 @@ install.packages("matrixStats")
 ```
 3. Clone or download a copy of this repository
 
-### App Use Instructions
+### App Launch Instructions
 In this example, the repository was cloned to the `~/Desktop/` directory.
 
 1. Open RStudio, change working directory to the `cytof_qc_app` location, load
@@ -301,12 +295,36 @@ runApp()
 
 The application will launch and you will see an interface similar to the following:
 
-![screenshot_img][screenshot]
+![app_launch_screenshot_img][app_launch_screenshot]
 
-2. Select the directory you would like to export the sample background report to
+Note the two tabs on the left correspond to the two main features of the application.
+
+
+### Features
+#### Sample Background Tracking
+
+This interface allows users to upload FCS files and export a separate sample 
+background report per file.
+
+The uploaded FCS files will undergo a pre-processing step that identifies beads, 
+doublets, and debris. A sample background report is then generated and includes 
+total event, total cell, and median channel values.
+
+Median values for all channels present in the FCS file will be reported. This app
+works with the assumption of the following:
+- marker-containing channel names include `Di`
+- DNA-containing channel names include `191Di`
+- bead-contaning channel names include the following: `140Di`, `175Di`
+
+Please reference the `sample_background_report.csv` file found under 
+`cytof_qc_app/docs/sample_background_report.csv` for an example report.
+
+##### Feature Use Instructions
+
+1. Select the directory you would like to export the sample background report to
 by clicking the `Choose directory` button.
 
-3. Upload one or multiple FCS files by clicking the `Browse...` button.
+2. Upload one or multiple FCS files by clicking the `Browse...` button.
 
 To select multiple files, hold the `Ctrl` key while clicking the files. Then click
 `Open`.
@@ -316,10 +334,21 @@ A progress bar will appear on the lower-right corner.
 Success or error messages will appear in the main panel in green and red text, 
 respectively.
 
-If successful, a csv file containing sample background information for the uploaded
-files will be exported. If only some of the FCS files were successfully processed, 
-the csv file will still be exported; however, it will only include the files that 
-were successfully processed.
+![sample_bckg_success_screenshot_img][sample_bckg_success_screenshot]
+
+A separate csv file containing sample background information for each of the 
+successfully processed files will be exported to the location you chose in step 1.
+
+If a sample was not successfully processed, a csv file will not be exported for
+the file. However, this will not affect export of sample background report files
+for successfully processed files.
 
 
-[screenshot]: cytof_qc_app/docs/sample_background_app_screenshot.png
+#### CyTOF QC Report Generator
+
+
+
+
+
+[app_launch_screenshot]: cytof_qc_app/docs/app_launch_screenshot.png
+[sample_bckg_success_screenshot]: cytof_qc_app/docs/sample_background_tracking_success.png
