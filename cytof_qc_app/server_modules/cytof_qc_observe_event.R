@@ -45,13 +45,10 @@ cytof_qc_observe_event <- function(input, cytof_qc_control_var, cytof_qc_file_st
       if (num_files_uploaded > 0) {
         # We reset the reactive values of our cytof_qc_control_var so that our error 
         # messages fade when the user attempts to re-upload files.
-        # cytof_qc_control_var$successful_completion <- FALSE
-        # cytof_qc_control_var$is_google_sheet_found <- TRUE
         cytof_qc_control_var$is_uploaded_file_type_valid <- TRUE
         cytof_qc_control_var$fcs_file_import_error <- FALSE
         cytof_qc_control_var$pre_processing_error <- FALSE
         cytof_qc_control_var$qc_report_generation_error <- FALSE
-        # cytof_qc_control_var$google_drive_data_transfer_error <- FALSE
         cytof_qc_control_var$render_gating_inspection <- FALSE
         cytof_qc_control_var$abnormal_gating_flag_error <- FALSE
         cytof_qc_control_var$successful_abnormal_gating_flag <- FALSE
@@ -64,18 +61,12 @@ cytof_qc_observe_event <- function(input, cytof_qc_control_var, cytof_qc_file_st
         cytof_qc_control_var$qc_report_export_success <- FALSE
         cytof_qc_control_var$qc_report_export_error <- FALSE
         
-
-        # cytof_qc_control_var$google_drive_updated_qc_report_transfer_error <- FALSE
-        # cytof_qc_control_var$google_drive_updated_qc_report_transfer_success <- FALSE
-
         # We also reset the reactive values of our cytof_qc_file_statuses variable to
         # ensure error messages include updated file names after a user
         # re-uploads files.
-        # cytof_qc_file_statuses$unsuccessful_google_drive_data_transfer_filenames <- ""
         cytof_qc_file_statuses$unsuccessful_fcs_file_import_filenames <- ""
         cytof_qc_file_statuses$unsuccessful_pre_processing_filenames <- ""
         cytof_qc_file_statuses$unsuccessful_report_generation_filenames <- ""
-        # cytof_qc_file_statuses$successful_completion_filenames <- ""
         cytof_qc_file_statuses$successful_abnormal_gating_flag_filename <- ""
         cytof_qc_file_statuses$unsuccessful_abnormal_gating_flag_filename <- ""
         cytof_qc_file_statuses$unsuccessful_abnormal_gating_unflag_filename <- ""
@@ -83,8 +74,6 @@ cytof_qc_observe_event <- function(input, cytof_qc_control_var, cytof_qc_file_st
         cytof_qc_file_statuses$unsuccessful_updated_qc_report_filename <- ""
         cytof_qc_file_statuses$successful_report_export_filenames <- ""
         cytof_qc_file_statuses$unsuccessful_report_export_filenames <- ""
-        # cytof_qc_file_statuses$unsuccessful_google_drive_updated_qc_report_transfer_filename <- ""
-        # cytof_qc_file_statuses$successful_google_drive_updated_qc_report_transfer_filename <- ""
 
         # We store a list of pre-processed fcs data and corresponding file names
         # for qc reports that were successfully exported in order to 
@@ -110,7 +99,7 @@ cytof_qc_observe_event <- function(input, cytof_qc_control_var, cytof_qc_file_st
 
         for (i in 1:num_files_uploaded) {
           incProgress(amount = (1 / num_files_uploaded), message = paste("Generating",
-          "QC report and transferring data to Google Drive for file", i, "/", 
+          "QC report and exporting data to target directory for file", i, "/", 
           num_files_uploaded))
           fcs_filename <- fcs_file_data_frame[i,]$name
           fcs_data <- fcs_import_file_error_handler(fcs_file_data_frame[i,]$datapath)
@@ -161,8 +150,7 @@ cytof_qc_observe_event <- function(input, cytof_qc_control_var, cytof_qc_file_st
           if (is.null(qc_report_export_status)) {
             cytof_qc_file_statuses$successful_report_export_filenames <- c(cytof_qc_file_statuses$successful_report_export_filenames,
                                                                                     fcs_filename)
-            # TODO: we might not need qc_report arg
-            prepare_for_gating_inspection(qc_report, fcs_filename, fcs_data_pre_processing, cytof_qc_gating_inspection)
+            prepare_for_gating_inspection(fcs_filename, fcs_data_pre_processing, cytof_qc_gating_inspection)
 
           } else if (sample_background_report_export_status == "Unsuccessful"){
             cytof_qc_control_var$qc_report_export_error <- TRUE

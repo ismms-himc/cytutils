@@ -39,11 +39,9 @@ qc_report_app_tab_item <- tabItem(tabName = "qc_report_app",
                         mainPanel(
                           htmlOutput("cytof_qc_report_dir_selection_status"),
                           htmlOutput("cytof_qc_invalid_file_type"),
-                          # htmlOutput("cytof_qc_google_sheet_not_found"),
                           htmlOutput("cytof_qc_fcs_file_import_errors"),
                           htmlOutput("cytof_qc_pre_processing_errors"),
                           htmlOutput("cytof_qc_report_generation_errors"),
-                          # htmlOutput("cytof_qc_google_drive_data_transfer_errors"),
                           htmlOutput("cytof_qc_export_successes"),
                           htmlOutput("cytof_qc_export_errors")
                         )

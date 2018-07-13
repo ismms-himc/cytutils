@@ -401,8 +401,7 @@ qc_report_export_error_handler <- function(cytof_qc_report_dir_path,
     error = function(e) { "Unsuccessful" })
 }
 
-# TODO: we might not need qc_report arg
-prepare_for_gating_inspection <- function(qc_report, fcs_filename, fcs_data_pre_processing, cytof_qc_gating_inspection) {
+prepare_for_gating_inspection <- function(fcs_filename, fcs_data_pre_processing, cytof_qc_gating_inspection) {
   pre_processed_data <- cytof_qc_gating_inspection$pre_processed_data
 
   bead_data <- fcs_data_pre_processing$bead_data

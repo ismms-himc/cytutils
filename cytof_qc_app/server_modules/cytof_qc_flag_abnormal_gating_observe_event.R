@@ -1,14 +1,14 @@
 flag_abnormal_gating_observe_event <- function(input, cytof_qc_gating_inspection, cytof_qc_control_var, cytof_qc_file_statuses) {
 	observeEvent(input$flag_abnormal_gating, {
 
-		# We remove old updated QC report generation/Google Drive transfer success
+		# We remove old updated QC report generation/export success
 		# and error messages
 	    cytof_qc_control_var$updated_qc_report_generation_error <- FALSE
 		cytof_qc_file_statuses$unsuccessful_updated_qc_report_filename <- ""
-	    cytof_qc_control_var$google_drive_updated_qc_report_transfer_error <- FALSE
-	    cytof_qc_file_statuses$unsuccessful_google_drive_updated_qc_report_transfer_filename <- ""
-	    cytof_qc_control_var$google_drive_updated_qc_report_transfer_success <- FALSE
-	    cytof_qc_file_statuses$successful_google_drive_updated_qc_report_transfer_filename <- ""
+	    cytof_qc_control_var$updated_qc_report_export_error <- FALSE
+	    cytof_qc_file_statuses$unsuccessful_updated_qc_report_export_filename <- ""
+	    cytof_qc_control_var$updated_qc_report_export_success <- FALSE
+	    cytof_qc_file_statuses$successful_updated_qc_report_export_filename <- ""
 
 	    abnormal_gating_filename <- cytof_qc_gating_inspection$currently_rendered_gating_filename
 	    cytof_qc_report_dir <- cytof_qc_file_statuses$cytof_qc_report_dir

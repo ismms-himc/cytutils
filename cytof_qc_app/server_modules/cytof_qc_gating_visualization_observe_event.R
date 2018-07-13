@@ -32,8 +32,6 @@ cytof_qc_gating_visualization_observe_event <- function(input, output, session, 
 	    	}
 	    }
 
-	    View(target_gating_visualization_data_frame)
-
 	    if (exists("target_gating_visualization_data_frame")) {
 		    output$gating_visualization <- renderPlot({
 	  		    withProgress(
