@@ -99,6 +99,11 @@ server <- function(input, output, session) {
   # The below are sourced from "./server_modules". They handle the logic of 
   # what occurs when a file is uploaded or an actionButton is clicked.
   cytof_qc_observe_event(input, cytof_qc_control_var, cytof_qc_file_statuses, cytof_qc_gating_inspection)
+  cytof_qc_gating_visualization_observe_event(input, output, session, cytof_qc_control_var, cytof_qc_gating_inspection)
+  # flag_abnormal_gating_observe_event(input, cytof_qc_gating_inspection, cytof_qc_control_var, cytof_qc_file_statuses)
+  # unflag_abnormal_gating_observe_event(input, cytof_qc_control_var, cytof_qc_file_statuses)
+  # cytof_qc_manually_update_gating_observe_event(input, output, session, cytof_qc_control_var, cytof_qc_file_statuses, cytof_qc_gating_inspection)
+  # cytof_qc_generate_updated_qc_report_observe_event(input, output, cytof_qc_control_var, cytof_qc_file_statuses, cytof_qc_gating_inspection)
   sample_background_observe_event(input, sample_background_control_var, sample_background_file_statuses)
 ################### CyTOF QC Feature Outputs #############################
 
@@ -126,37 +131,30 @@ server <- function(input, output, session) {
     }
   })
 
-  #   output$cytof_qc_google_sheet_not_found <- renderUI({
-  #   if (!cytof_qc_control_var$is_google_sheet_found) {
-  #     p(paste("Error: Google sheet entitled \"sample log CyTOF\" and/or", 
-  #       "\"samples\" tab were not found."),
-  #       style = "color: red; font-size: 14px; margin: 10px;")
-  #   }
-  # })
 
-  # output$cytof_qc_fcs_file_import_errors <- renderUI({
-  #   error_message <- vector("list")
-  #   if (cytof_qc_control_var$fcs_file_import_error) {
-  #     for (i in 1:length(cytof_qc_file_statuses$unsuccessful_fcs_file_import_filenames)) {
-  #       if (i == 1) {
-  #         error_message[[i]] <- list(
-  #           div(style = "color: red; font-size: 14px; margin: 5px; padding-top: 15px;",
-  #             p(paste("Error: The following file(s) failed the file import",
-  #             "step. As such, pre-processing, QC report generation, and data",
-  #             "transfer to Google Drive did not occur:"))
-  #           )
-  #         )
-  #       } else {
-  #         error_message[[i]] <- list(
-  #           tags$li(style = "color: red; font-size: 14px; margin: 5px; padding-left: 30px;", 
-  #             cytof_qc_file_statuses$unsuccessful_fcs_file_import_filenames[i])
-  #         )
-  #       }
-  #     }
-  #   }
+  output$cytof_qc_fcs_file_import_errors <- renderUI({
+    error_message <- vector("list")
+    if (cytof_qc_control_var$fcs_file_import_error) {
+      for (i in 1:length(cytof_qc_file_statuses$unsuccessful_fcs_file_import_filenames)) {
+        if (i == 1) {
+          error_message[[i]] <- list(
+            div(style = "color: red; font-size: 14px; margin: 5px; padding-top: 15px;",
+              p(paste("Error: The following file(s) failed the file import",
+              "step. As such, pre-processing, QC report generation, and data",
+              "transfer to Google Drive did not occur:"))
+            )
+          )
+        } else {
+          error_message[[i]] <- list(
+            tags$li(style = "color: red; font-size: 14px; margin: 5px; padding-left: 30px;", 
+              cytof_qc_file_statuses$unsuccessful_fcs_file_import_filenames[i])
+          )
+        }
+      }
+    }
 
-  #   error_message
-  # })
+    error_message
+  })
 
   output$cytof_qc_pre_processing_errors <- renderUI({
     error_message <- vector("list")
@@ -252,40 +250,40 @@ server <- function(input, output, session) {
     success_message
   })
 
-  # output$gating_inspection_and_visualization <- renderUI({
-  #   if (cytof_qc_control_var$render_gating_inspection) {
-  #     fluidRow(
-  #       tags$hr(style="border-color: #C0C0C0;"),
-  #       column(4,
-  #         h3("Gating Inspection"),
-  #         p("Please choose a file name to render a gating visualization:"),
-  #         selectInput(inputId = "gating_filename", 
-  #                     label = "Filename",
-  #                     choices = cytof_qc_file_statuses$successful_completion_filenames),
-  #         actionButton(inputId = "generate_gating_visualization",
-  #                     label = "Generate Gating Visualization", 
-  #                     icon = icon("area-chart")),
-  #         uiOutput("abnormal_gating_flag"),
-  #         htmlOutput("abnormal_gating_flag_status_message"),
-  #         uiOutput("undo_abnormal_gating_flag"),
-  #         htmlOutput("undo_abnormal_gating_flag_status_message")
-  #       ),
-  #       column(5,
-  #         plotOutput("gating_visualization",
-  #           brush = brushOpts(
-  #             id = "manual_gating_brush"
-  #             ))
-  #       ), 
-  #       column(3,
-  #         uiOutput("manual_gating"),
-  #         htmlOutput("update_gating_status_message"),
-  #         uiOutput("update_qc_report"),
-  #         htmlOutput("generate_updated_qc_report_error_message"),
-  #         htmlOutput("transfer_updated_qc_report_to_google_drive_status_message")
-  #       )
-  #     )     
-  #   }
-  # })
+  output$gating_inspection_and_visualization <- renderUI({
+    if (cytof_qc_control_var$render_gating_inspection) {
+      fluidRow(
+        tags$hr(style="border-color: #C0C0C0;"),
+        column(4,
+          h3("Gating Inspection"),
+          p("Please choose a file name to render a gating visualization:"),
+          selectInput(inputId = "gating_filename", 
+                      label = "Filename",
+                      choices = cytof_qc_file_statuses$successful_report_export_filenames),
+          actionButton(inputId = "generate_gating_visualization",
+                      label = "Generate Gating Visualization", 
+                      icon = icon("area-chart")),
+          uiOutput("abnormal_gating_flag"),
+          htmlOutput("abnormal_gating_flag_status_message"),
+          uiOutput("undo_abnormal_gating_flag"),
+          htmlOutput("undo_abnormal_gating_flag_status_message")
+        ),
+        column(5,
+          plotOutput("gating_visualization",
+            brush = brushOpts(
+              id = "manual_gating_brush"
+              ))
+        ), 
+        column(3,
+          uiOutput("manual_gating"),
+          htmlOutput("update_gating_status_message"),
+          uiOutput("update_qc_report"),
+          htmlOutput("generate_updated_qc_report_error_message")
+          # htmlOutput("transfer_updated_qc_report_to_google_drive_status_message")
+        )
+      )     
+    }
+  })
 
   # output$abnormal_gating_flag_status_message <- renderUI({
   #   status_message <- vector("list")
