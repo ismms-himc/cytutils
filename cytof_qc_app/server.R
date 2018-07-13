@@ -114,7 +114,13 @@ server <- function(input, output, session) {
     } 
   })
 
-
+  output$cytof_qc_invalid_file_type <- renderUI({
+    if (!cytof_qc_control_var$is_uploaded_file_type_valid) {
+      p(paste("Error: File(s) of incorrect type were uploaded. This ",
+        "application only supports FCS files."),
+        style = "color: red; font-size: 14px; margin: 10px;")
+    }
+  })
 
 
 
