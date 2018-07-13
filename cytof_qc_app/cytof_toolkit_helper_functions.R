@@ -430,3 +430,24 @@ prepare_for_gating_inspection <- function(qc_report, fcs_filename, fcs_data_pre_
 
   cytof_qc_gating_inspection$pre_processed_data[[target_index]] <- fcs_data_for_visualization
 }
+
+
+
+flag_abnormal_gating_in_exported_qc_report_error_handler <- function(abnormal_gating_filename,
+                                                                      cytof_qc_report_dir) {
+ tryCatch(flag_abnormal_gating_in_exported_qc_report(abnormal_gating_filename, cytof_qc_report_dir),
+    error = function(e) { "Unsuccessful" }
+  )
+}
+
+flag_abnormal_gating_in_exported_qc_report <- function(abnormal_gating_filename, cytof_qc_report_dir) {
+  filepath <- paste0(cytof_qc_report_dir, "/", abnormal_gating_filename, "_cytof_qc_report.csv")
+
+  qc_report <- read.csv(filepath)
+  qc_report$Abnormal.Gating <- 'True'
+  write.csv(qc_report, filepath)
+
+  # We implicitly return "Successful" so that abnormal_gating_flag_transfer_status
+  # is not undefined if we reach the end of the function without raising an error.
+  "Successful"
+}

@@ -100,7 +100,7 @@ server <- function(input, output, session) {
   # what occurs when a file is uploaded or an actionButton is clicked.
   cytof_qc_observe_event(input, cytof_qc_control_var, cytof_qc_file_statuses, cytof_qc_gating_inspection)
   cytof_qc_gating_visualization_observe_event(input, output, session, cytof_qc_control_var, cytof_qc_gating_inspection)
-  # flag_abnormal_gating_observe_event(input, cytof_qc_gating_inspection, cytof_qc_control_var, cytof_qc_file_statuses)
+  flag_abnormal_gating_observe_event(input, cytof_qc_gating_inspection, cytof_qc_control_var, cytof_qc_file_statuses)
   # unflag_abnormal_gating_observe_event(input, cytof_qc_control_var, cytof_qc_file_statuses)
   # cytof_qc_manually_update_gating_observe_event(input, output, session, cytof_qc_control_var, cytof_qc_file_statuses, cytof_qc_gating_inspection)
   # cytof_qc_generate_updated_qc_report_observe_event(input, output, cytof_qc_control_var, cytof_qc_file_statuses, cytof_qc_gating_inspection)
@@ -285,40 +285,40 @@ server <- function(input, output, session) {
     }
   })
 
-  # output$abnormal_gating_flag_status_message <- renderUI({
-  #   status_message <- vector("list")
-  #   if (cytof_qc_control_var$successful_abnormal_gating_flag & !cytof_qc_control_var$abnormal_gating_unflag_error) {
-  #     status_message[[1]] <- list(
-  #           div(style = "color: green; font-size: 12px; margin: 5px; padding-top: 15px;",
-  #             p(paste("Success. The following file was flagged as having abnormal",
-  #             "gating in Google Drive:")
-  #             )
-  #           )
-  #         )
+  output$abnormal_gating_flag_status_message <- renderUI({
+    status_message <- vector("list")
+    if (cytof_qc_control_var$successful_abnormal_gating_flag & !cytof_qc_control_var$abnormal_gating_unflag_error) {
+      status_message[[1]] <- list(
+            div(style = "color: green; font-size: 12px; margin: 5px; padding-top: 15px;",
+              p(paste("Success. The following file was flagged as having abnormal",
+              "gating in the exported QC report:")
+              )
+            )
+          )
 
-  #     status_message[[2]] <- list(
-  #         tags$li(style = "color: green; font-size: 12px; margin: 5px; padding-left: 30px;", 
-  #             cytof_qc_file_statuses$successful_abnormal_gating_flag_filename)
-  #       )
-  #   } else if (cytof_qc_control_var$abnormal_gating_flag_error) {
-  #     status_message[[1]] <- list(
-  #           div(style = "color: red; font-size: 12px; margin: 5px; padding-top: 15px;",
-  #             p(paste("Error: The following file was not flagged as having abnormal",
-  #             "gating in Google Drive. Please ensure the \"acq file path\" column",
-  #             "cell corresponding to this file is properly filled in. A modified",
-  #             "or missing column name may have also caused the error.")
-  #             )
-  #           )
-  #         )
+      status_message[[2]] <- list(
+          tags$li(style = "color: green; font-size: 12px; margin: 5px; padding-left: 30px;", 
+              cytof_qc_file_statuses$successful_abnormal_gating_flag_filename)
+        )
+    } else if (cytof_qc_control_var$abnormal_gating_flag_error) {
+      status_message[[1]] <- list(
+            div(style = "color: red; font-size: 12px; margin: 5px; padding-top: 15px;",
+              p(paste("Error: The following file was not flagged as having abnormal",
+              "gating in the exported QC report. Please ensure the previously chosen",
+              "target directory still exists and the previously exported QC report's",
+              "filename was not changed.")
+              )
+            )
+          )
 
-  #     status_message[[2]] <- list(
-  #         tags$li(style = "color: red; font-size: 12px; margin: 5px; padding-left: 30px;", 
-  #             cytof_qc_file_statuses$unsuccessful_abnormal_gating_flag_filename)
-  #       )
-  #   }
+      status_message[[2]] <- list(
+          tags$li(style = "color: red; font-size: 12px; margin: 5px; padding-left: 30px;", 
+              cytof_qc_file_statuses$unsuccessful_abnormal_gating_flag_filename)
+        )
+    }
 
-  #   status_message
-  # })
+    status_message
+  })
 
   # # We render an undo button when abnormal gating was successfully flagged.
   # output$undo_abnormal_gating_flag <- renderUI({
