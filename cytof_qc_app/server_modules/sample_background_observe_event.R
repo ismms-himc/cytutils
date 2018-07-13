@@ -20,7 +20,6 @@ shinyDirChoose(input, id = "sample_background_report_dir", roots = c(home = '~')
     # and upload FCS files.
     sample_background_control_var$sample_background_report_dir_valid <- FALSE
     sample_background_control_var$sample_background_report_dir_invalid <- FALSE
-    sample_background_control_var$aggr_sample_background_report_export_error <- FALSE
     sample_background_file_statuses$sample_background_report_dir <- ""
 
     sample_background_report_dir <- input$sample_background_report_dir
@@ -39,7 +38,6 @@ shinyDirChoose(input, id = "sample_background_report_dir", roots = c(home = '~')
   observeEvent(input$sample_background_file, {
     if (sample_background_file_statuses$sample_background_report_dir == "") {
       sample_background_control_var$is_output_dir_chosen_before_upload <- FALSE
-      warning("Output directory not chosen.")
     } else {
       background_data_file_data_frame <- input$sample_background_file
       num_files_uploaded <- nrow(background_data_file_data_frame)
