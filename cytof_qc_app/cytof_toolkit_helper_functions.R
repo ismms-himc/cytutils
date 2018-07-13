@@ -322,3 +322,111 @@ source_dir <- function(path, trace = TRUE, ...) {
        if(trace) cat("\n")
     }
 }
+
+# Computes the robust" CV, as defined by FlowJo
+# See http://www.flowjo.com/v76/en/statdefinitions.html
+
+rcv <- function(x) {
+  as.numeric(100 * 0.5 *
+             (quantile(x, 0.8413) - quantile(x, 0.1587)) / median(x))
+}
+
+generate_qc_report <- function(fcs_data,  fcs_filename, fcs_data_pre_processing, cofactor, qc_reporter_version) {
+  qc_report_timestamp <- Sys.time()
+  gating_data <- fcs_data$data[fcs_data_pre_processing$gating_data$index, ]
+  bead_data <- fcs_data$data[fcs_data_pre_processing$bead_data$index, ]
+  gating_time <- gating_data[[fcs_find_channels(gating_data, "Time")]]
+
+  gating_ir193 <- gating_data[[fcs_find_channels(gating_data, "Ir193")]]
+
+  bead_time <- bead_data[[fcs_find_channels(bead_data, "Time")]]
+
+  bead_eu153 <- bead_data[[fcs_find_channels(bead_data, "Eu153")]]
+  bead_ce140 <- bead_data[[fcs_find_channels(bead_data, "Ce140")]]
+  bead_gd156 <- bead_data[[fcs_find_channels(bead_data, "Gd156")]]
+  bead_lu175 <- bead_data[[fcs_find_channels(bead_data, "Lu175")]]
+  bead_lu176 <- bead_data[[fcs_find_channels(bead_data, "Lu176")]]
+  ab_gate_default <- "False"
+
+  qc_report <-
+    dplyr::data_frame(
+      `QC Reporter Version` = qc_reporter_version,
+      `QC Report Timestamp` = qc_report_timestamp,
+        Filename = fcs_filename,
+      `Start Time` =
+        paste0(fcs_data$obj@description$`$DATE`, " ",
+               fcs_data$obj@description$`$BTIM`),
+      `End Time` =
+        paste0(fcs_data$obj@description$`$DATE`, " ",
+               fcs_data$obj@description$`$ETIM`),
+      `Total Events` = nrow(fcs_data$data),
+      `Total Cells` = nrow(gating_data),
+      `Ir193 Median` = median(gating_ir193),
+      `Ir193 vs Time` = cor(gating_time, asinh(gating_ir193 / cofactor)),
+      `Total Beads` = nrow(bead_data),
+      `Eu153 Median` = median(bead_eu153),
+      `Eu153 rCV` = rcv(bead_eu153),
+      `Ce140 Median` = median(bead_ce140),
+      `Gd156 Median` = median(bead_gd156),
+      `Oxide%` = `Gd156 Median` / `Ce140 Median`,
+      `Eu153 vs Time` = cor(bead_time, asinh(bead_eu153 / cofactor)),
+      `Lu175 Median` = median(bead_lu175),
+      `Lu176 Median` = median(bead_lu176),
+      `Ratio Lu175/Lu176` = `Lu175 Median` / `Lu176 Median`,
+      `Abnormal Gating` = ab_gate_default
+    )
+}
+
+generate_qc_report_error_handler <- function(fcs_data, 
+                                            fcs_filename, 
+                                            fcs_data_pre_processing,
+                                            cofactor,
+                                            qc_reporter_version) {
+  tryCatch(generate_qc_report(fcs_data, 
+                        fcs_filename, 
+                        fcs_data_pre_processing,
+                        cofactor,
+                        qc_reporter_version),
+    error = function(e) { NULL }
+  )
+}
+
+qc_report_export_error_handler <- function(cytof_qc_report_dir_path,
+                                                            qc_report,
+                                                            fcs_filename) {
+  filepath <- paste0(cytof_qc_report_dir_path, "/", fcs_filename, "_cytof_qc_report.csv")
+  tryCatch(write.csv(qc_report, 
+                      filepath),
+    error = function(e) { "Unsuccessful" })
+}
+
+# TODO: we might not need qc_report arg
+prepare_for_gating_inspection <- function(qc_report, fcs_filename, fcs_data_pre_processing, cytof_qc_gating_inspection) {
+  pre_processed_data <- cytof_qc_gating_inspection$pre_processed_data
+
+  bead_data <- fcs_data_pre_processing$bead_data
+  bead_data$category = "bead"
+
+  debris_data <- fcs_data_pre_processing$debris_data
+  debris_data$category = "debris"
+
+  # We flag bead-cell doublets as debris to ensure that our data visualization
+  # more closely matches FlowJo visualization.
+  bead_cell_doublets_data <- fcs_data_pre_processing$bead_cell_doublets_data
+  bead_cell_doublets_data$category = "debris"
+
+  gating_data <- fcs_data_pre_processing$gating_data
+  gating_data$category = "cell"
+
+  fcs_data_for_visualization <- rbind(bead_data, debris_data, bead_cell_doublets_data, gating_data)
+  fcs_data_for_visualization$filename = fcs_filename
+
+  for (i in 1:length(pre_processed_data)) {
+    if (is.null(pre_processed_data[[i]])) {
+        target_index <- i
+        break
+    }
+  }
+
+  cytof_qc_gating_inspection$pre_processed_data[[target_index]] <- fcs_data_for_visualization
+}

@@ -44,7 +44,8 @@ qc_report_app_tab_item <- tabItem(tabName = "qc_report_app",
                           htmlOutput("cytof_qc_pre_processing_errors"),
                           htmlOutput("cytof_qc_report_generation_errors"),
                           # htmlOutput("cytof_qc_google_drive_data_transfer_errors"),
-                          htmlOutput("cytof_qc_successful_completions")
+                          htmlOutput("cytof_qc_export_successes"),
+                          htmlOutput("cytof_qc_export_errors")
                         )
                       ),
                       uiOutput("gating_inspection_and_visualization")

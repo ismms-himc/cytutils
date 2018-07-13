@@ -45,7 +45,7 @@ cytof_qc_observe_event <- function(input, cytof_qc_control_var, cytof_qc_file_st
       if (num_files_uploaded > 0) {
         # We reset the reactive values of our cytof_qc_control_var so that our error 
         # messages fade when the user attempts to re-upload files.
-        cytof_qc_control_var$successful_completion <- FALSE
+        # cytof_qc_control_var$successful_completion <- FALSE
         # cytof_qc_control_var$is_google_sheet_found <- TRUE
         cytof_qc_control_var$is_uploaded_file_type_valid <- TRUE
         cytof_qc_control_var$fcs_file_import_error <- FALSE
@@ -61,6 +61,10 @@ cytof_qc_observe_event <- function(input, cytof_qc_control_var, cytof_qc_file_st
         cytof_qc_control_var$manual_gating_success <- FALSE
         cytof_qc_control_var$manual_gating_error <- FALSE
         cytof_qc_control_var$updated_qc_report_generation_error <- FALSE
+        cytof_qc_control_var$qc_report_export_success <- FALSE
+        cytof_qc_control_var$qc_report_export_error <- FALSE
+        
+
         # cytof_qc_control_var$google_drive_updated_qc_report_transfer_error <- FALSE
         # cytof_qc_control_var$google_drive_updated_qc_report_transfer_success <- FALSE
 
@@ -71,12 +75,14 @@ cytof_qc_observe_event <- function(input, cytof_qc_control_var, cytof_qc_file_st
         cytof_qc_file_statuses$unsuccessful_fcs_file_import_filenames <- ""
         cytof_qc_file_statuses$unsuccessful_pre_processing_filenames <- ""
         cytof_qc_file_statuses$unsuccessful_report_generation_filenames <- ""
-        cytof_qc_file_statuses$successful_completion_filenames <- ""
+        # cytof_qc_file_statuses$successful_completion_filenames <- ""
         cytof_qc_file_statuses$successful_abnormal_gating_flag_filename <- ""
         cytof_qc_file_statuses$unsuccessful_abnormal_gating_flag_filename <- ""
         cytof_qc_file_statuses$unsuccessful_abnormal_gating_unflag_filename <- ""
         cytof_qc_file_statuses$successful_abnormal_gating_unflag_filename <- ""
         cytof_qc_file_statuses$unsuccessful_updated_qc_report_filename <- ""
+        cytof_qc_file_statuses$successful_report_export_filenames <- ""
+        cytof_qc_file_statuses$unsuccessful_report_export_filenames <- ""
         # cytof_qc_file_statuses$unsuccessful_google_drive_updated_qc_report_transfer_filename <- ""
         # cytof_qc_file_statuses$successful_google_drive_updated_qc_report_transfer_filename <- ""
 
@@ -98,103 +104,87 @@ cytof_qc_observe_event <- function(input, cytof_qc_control_var, cytof_qc_file_st
           return()
         }
       }
+
+      withProgress(value = 0, {
+        qc_report_all <- list()
+
+        for (i in 1:num_files_uploaded) {
+          incProgress(amount = (1 / num_files_uploaded), message = paste("Generating",
+          "QC report and transferring data to Google Drive for file", i, "/", 
+          num_files_uploaded))
+          fcs_filename <- fcs_file_data_frame[i,]$name
+          fcs_data <- fcs_import_file_error_handler(fcs_file_data_frame[i,]$datapath)
+
+          if (is.null(fcs_data)) {
+            cytof_qc_control_var$fcs_file_import_error <- TRUE
+            cytof_qc_file_statuses$unsuccessful_fcs_file_import_filenames <- c(cytof_qc_file_statuses$unsuccessful_fcs_file_import_filenames,
+                                                                        fcs_filename)
+            next
+          }
+
+          fcs_data_pre_processing <- mass_cytometry_pre_processing_error_handler(fcs_data$data, cofactor, 
+                              event_channel, dna_channel, 
+                              bead_gates)
+
+          if (is.null(fcs_data_pre_processing)) {
+            cytof_qc_control_var$pre_processing_error <- TRUE
+            cytof_qc_file_statuses$unsuccessful_pre_processing_filenames <- c(cytof_qc_file_statuses$unsuccessful_pre_processing_filenames,
+                                                                        fcs_filename)
+            next
+          }
+
+          # This will be updated every time our pre-processing algorithm
+          # is updated.
+          qc_reporter_version <- "QCToolkit_v170622"
+
+          qc_report <- generate_qc_report_error_handler(fcs_data, 
+                                                        fcs_filename, 
+                                                        fcs_data_pre_processing,
+                                                        cofactor,
+                                                        qc_reporter_version)
+
+          if (is.null(qc_report)) {
+            cytof_qc_control_var$qc_report_generation_error <- TRUE
+            cytof_qc_file_statuses$unsuccessful_report_generation_filenames <- c(cytof_qc_file_statuses$unsuccessful_report_generation_filenames,
+                                                                        fcs_filename)
+            next
+          }
+
+          View(qc_report)
+
+          # TODO: remove this if not used
+          qc_report_all$fcs_filename <- qc_report
+
+          qc_report_export_status <- qc_report_export_error_handler(
+                                                            cytof_qc_file_statuses$cytof_qc_report_dir,
+                                                            qc_report,
+                                                            fcs_filename)
+
+          if (is.null(qc_report_export_status)) {
+            cytof_qc_file_statuses$successful_report_export_filenames <- c(cytof_qc_file_statuses$successful_report_export_filenames,
+                                                                                    fcs_filename)
+            # TODO: we might not need qc_report arg
+            prepare_for_gating_inspection(qc_report, fcs_filename, fcs_data_pre_processing, cytof_qc_gating_inspection)
+
+          } else if (sample_background_report_export_status == "Unsuccessful"){
+            cytof_qc_control_var$qc_report_export_error <- TRUE
+            cytof_qc_file_statuses$unsuccessful_report_export_filenames <- c(cytof_qc_file_statuses$unsuccessful_report_export_filenames,
+                                                                                      fcs_filename)
+          }    
+
+          rm(fcs_data, 
+            fcs_data_pre_processing, 
+            qc_report)
+        }
+      })
+
+
+      if (length(cytof_qc_file_statuses$successful_report_export_filenames) > 1) {
+        cytof_qc_control_var$qc_report_export_success <- TRUE
+        # We update our control variable to render gating inspection/visualization
+        # information on the UI for successfully completed files only.
+        cytof_qc_control_var$render_gating_inspection <- TRUE
+      }
     }
-
-
-
-
-
-
-
-
-
-      # # We check google sheet title and tab name validity prior to processing the
-      # # the uploaded files to render an error message to the UI as soon as possible.
-      # # destination_sheet <- find_destination_sheet(google_sheet_title = "sample log CyTOF")
-      # # if (is.null(destination_sheet)) {
-      # #   cytof_qc_control_var$is_google_sheet_found <- FALSE
-      # #   return()
-      # # }
-
-      # # destination_tab <-  find_destination_tab(destination_sheet, google_sheet_tab_name = "samples")
-      # # if (is.null(destination_tab)) {
-      # #   cytof_qc_control_var$is_google_sheet_found <- FALSE
-      # #   return()
-      # # }
-
-
-
-      # withProgress(value = 0, {
-      #   for (i in 1:num_files_uploaded) {
-      #     incProgress(amount = (1 / num_files_uploaded), message = paste("Generating",
-      #       "QC report and transferring data to Google Drive for file", i, "/", 
-      #       num_files_uploaded))
-      #     fcs_filename <- fcs_file_data_frame[i,]$name
-
-      #     fcs_data <- fcs_import_file_error_handler(fcs_file_data_frame[i,]$datapath)
-
-      #     if (is.null(fcs_data)) {
-      #       cytof_qc_control_var$fcs_file_import_error <- TRUE
-      #       cytof_qc_file_statuses$unsuccessful_fcs_file_import_filenames <- c(cytof_qc_file_statuses$unsuccessful_fcs_file_import_filenames,
-      #                                                                   fcs_filename)
-      #       next
-      #     }
-
-      #     fcs_data_pre_processing <- mass_cytometry_pre_processing_error_handler(fcs_data$data, cofactor, 
-      #                         event_channel, dna_channel, 
-      #                         bead_gates)
-
-      #     if (is.null(fcs_data_pre_processing)) {
-      #       cytof_qc_control_var$pre_processing_error <- TRUE
-      #       cytof_qc_file_statuses$unsuccessful_pre_processing_filenames <- c(cytof_qc_file_statuses$unsuccessful_pre_processing_filenames,
-      #                                                                   fcs_filename)
-      #       next
-      #     }
-
-      #     # NB: This will have to be updated every time our pre-processing algorithm
-      #     # is updated.
-      #     qc_reporter_version <- "QCToolkit_v170622"
-
-      #     qc_report <- generate_qc_report_error_handler(fcs_data, 
-      #                                                   fcs_filename, 
-      #                                                   fcs_data_pre_processing,
-      #                                                   cofactor,
-      #                                                   qc_reporter_version)
-
-      #     if (is.null(qc_report)) {
-      #       cytof_qc_control_var$qc_report_generation_error <- TRUE
-      #       cytof_qc_file_statuses$unsuccessful_report_generation_filenames <- c(cytof_qc_file_statuses$unsuccessful_report_generation_filenames,
-      #                                                                   fcs_filename)
-      #       next
-      #     }
-          
-      #     google_drive_data_transfer_status <- send_qc_report_data_to_google_drive_error_handler(qc_report, 
-      #                                                           fcs_filename, 
-      #                                                           destination_sheet,
-      #                                                           destination_tab)
-
-      #     if (google_drive_data_transfer_status == "Unsuccessful") {
-      #       cytof_qc_control_var$google_drive_data_transfer_error <- TRUE
-      #       cytof_qc_file_statuses$unsuccessful_google_drive_data_transfer_filenames <- c(cytof_qc_file_statuses$unsuccessful_google_drive_data_transfer_filenames, 
-      #                               fcs_filename)
-      #     } else {
-      #       cytof_qc_file_statuses$successful_completion_filenames <- c(cytof_qc_file_statuses$successful_completion_filenames, 
-      #                                                                         fcs_filename)
-      #       prepare_for_gating_inspection(fcs_filename, fcs_data_pre_processing, cytof_qc_gating_inspection)
-      #     }
-
-      #     rm(fcs_data, 
-      #       fcs_data_pre_processing, 
-      #       qc_report,
-      #       google_drive_data_transfer_status)
-      #   }
-      # })
-
-      # if (length(cytof_qc_file_statuses$successful_completion_filenames) > 1) {
-      #   cytof_qc_control_var$successful_completion <- TRUE
-      #   # We update our control variable to render gating inspection/visualization
-      #   # information on the UI for successfully completed files only.
-      #   cytof_qc_control_var$render_gating_inspection <- TRUE
-      # }
-    })
+  })
 }
