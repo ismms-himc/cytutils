@@ -1,3 +1,7 @@
+# DEPRECATION WARNING:
+As of 11/02/18 this repository is deprecated. Please visit [this repo](https://github.com/ismms-himc/cytutils)
+for the active version of this repository.
+
 # cytutils
 Cytometry quality control and reproducibility utilities. The methods available
 in this package were developed by the Human Immune Monitoring Center at the
