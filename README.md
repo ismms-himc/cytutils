@@ -282,8 +282,9 @@ install.packages("mclust")
 install.packages("dplyr")
 install.packages("ggplot2")
 install.packages("robustbase")
-install.packages("flowCore")
 install.packages("matrixStats")
+source("https://bioconductor.org/biocLite.R")
+biocLite('flowCore')
 ```
 3. Clone or download a copy of this repository
 
