@@ -24,8 +24,6 @@ cytof_qc_gating_visualization_observe_event <- function(input, output, session, 
 	    searchable_data_frames <- cytof_qc_gating_inspection$pre_processed_data
 
 	    for (i in 1:length(searchable_data_frames)) {
-	    	cat("length")
-	    	cat(length(searchable_data_frames))
 	    	if (searchable_data_frames[[i]]$filename == gating_filename) {
 			    target_gating_visualization_data_frame <- searchable_data_frames[[i]]
 			    break
@@ -33,13 +31,23 @@ cytof_qc_gating_visualization_observe_event <- function(input, output, session, 
 	    }
 
 	    if (exists("target_gating_visualization_data_frame")) {
+		    gating_viz_cols <- colnames(target_gating_visualization_data_frame)
+
+		    ir191_dna_idx_res <- grepl('Ir191', gating_viz_cols)
+		   	ir191_dna_idx <- which(ir191_dna_idx_res)
+		   	ir191_dna_colname <- gating_viz_cols[ir191_dna_idx]
+
+		    ce140_dna_idx_res <- grepl('Ce140', gating_viz_cols)
+		   	ce140_dna_idx <- which(ce140_dna_idx_res)
+		   	ce140_dna_colname <- gating_viz_cols[ce140_dna_idx]
+
 		    output$gating_visualization <- renderPlot({
 	  		    withProgress(
 			    	message = "Generating gating visualization", {
 
 					target_plot <- ggplot(data = target_gating_visualization_data_frame,
-							    		mapping = aes(x = Ir191Di_DNA,
-							            y = Ce140Di_NA)) + geom_point(aes(colour = category)) + 
+							    		mapping = aes_string(x = ir191_dna_colname,
+							            y = ce140_dna_colname)) + geom_point(aes(colour = category)) + 
 							  					ggtitle(gating_filename) + 
 												  theme(plot.title = element_text(hjust = 0.5)) +
 							                      xlab("Ir191Di DNA") +
@@ -53,8 +61,6 @@ cytof_qc_gating_visualization_observe_event <- function(input, output, session, 
 					target_plot
 		    	})
 			})
-
-
 
 			output$abnormal_gating_flag <- renderUI({
 				div(
