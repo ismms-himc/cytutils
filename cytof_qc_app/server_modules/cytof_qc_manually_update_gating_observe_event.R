@@ -54,9 +54,18 @@ cytof_qc_manually_update_gating_observe_event <- function(input, output, session
 
 		    progress$set(message = 'Updating gating visualization')
 
+		    gating_viz_cols <- colnames(gating_visualization_data_frame)
+		    ir191_dna_idx_res <- grepl('Ir191', gating_viz_cols)
+		   	ir191_dna_idx <- which(ir191_dna_idx_res)
+		   	ir191_dna_colname <- gating_viz_cols[ir191_dna_idx]
+
+		    ce140_dna_idx_res <- grepl('Ce140', gating_viz_cols)
+		   	ce140_dna_idx <- which(ce140_dna_idx_res)
+		   	ce140_dna_colname <- gating_viz_cols[ce140_dna_idx]
+
 		    gating_plot <- ggplot(data = gating_visualization_data_frame,
-		    mapping = aes(x = Ir191Di_DNA,
-		            y = Ce140Di_NA)) + geom_point(aes(colour = category)) + 
+		    mapping = aes_string(x = ir191_dna_colname,
+		            y = ce140_dna_colname)) + geom_point(aes(colour = category)) + 
 		  					ggtitle(gating_filename) + 
 							  theme(plot.title = element_text(hjust = 0.5)) +
 		                      xlab("Ir191Di DNA") +
