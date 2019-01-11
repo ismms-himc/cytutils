@@ -280,9 +280,12 @@ install.packages("shinydashboard")
 install.packages("shinyFiles")
 install.packages("mclust")
 install.packages("dplyr")
+install.packages("plyr")
 install.packages("ggplot2")
 install.packages("robustbase")
 install.packages("matrixStats")
+install.packages("DT")
+
 source("https://bioconductor.org/biocLite.R")
 biocLite('flowCore')
 ```
