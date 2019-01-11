@@ -167,8 +167,9 @@ cytof_qc_observe_event <- function(input, cytof_qc_control_var, cytof_qc_file_st
 
       if (length(cytof_qc_file_statuses$successful_report_export_filenames) > 1) {
         cytof_qc_control_var$qc_report_export_success <- TRUE
-        # We update our control variable to render gating inspection/visualization
-        # information on the UI for successfully completed files only.
+        # We update our control variables to render the QC report table and 
+        # gating inspection/visualization information on the UI for successfully 
+        # completed files only.
         cytof_qc_control_var$render_gating_inspection <- TRUE
       }
     }
