@@ -82,7 +82,6 @@ cytof_qc_observe_event <- function(input, cytof_qc_control_var, cytof_qc_file_st
         cytof_qc_gating_inspection$currently_rendered_gating_filename <- ""
       }
 
-
       for (i in 1:num_files_uploaded) {
         fcs_data_path <- fcs_file_data_frame[i,]$datapath
 
@@ -95,8 +94,6 @@ cytof_qc_observe_event <- function(input, cytof_qc_control_var, cytof_qc_file_st
       }
 
       withProgress(value = 0, {
-        qc_report_all <- list()
-
         for (i in 1:num_files_uploaded) {
           incProgress(amount = (1 / num_files_uploaded), message = paste("Generating",
           "QC report and exporting data to target directory for file", i, "/", 
@@ -139,9 +136,6 @@ cytof_qc_observe_event <- function(input, cytof_qc_control_var, cytof_qc_file_st
             next
           }
 
-
-          qc_report_all$fcs_filename <- qc_report
-
           qc_report_export_status <- qc_report_export_error_handler(
                                                             cytof_qc_file_statuses$cytof_qc_report_dir,
                                                             qc_report,
@@ -151,7 +145,7 @@ cytof_qc_observe_event <- function(input, cytof_qc_control_var, cytof_qc_file_st
             cytof_qc_file_statuses$successful_report_export_filenames <- c(cytof_qc_file_statuses$successful_report_export_filenames,
                                                                                     fcs_filename)
             prepare_for_gating_inspection(fcs_filename, fcs_data_pre_processing, cytof_qc_gating_inspection)
-
+            cytof_qc_gating_inspection$cytof_qc_report_tables[[fcs_filename]] <- qc_report
           } else if (sample_background_report_export_status == "Unsuccessful"){
             cytof_qc_control_var$qc_report_export_error <- TRUE
             cytof_qc_file_statuses$unsuccessful_report_export_filenames <- c(cytof_qc_file_statuses$unsuccessful_report_export_filenames,
@@ -163,7 +157,6 @@ cytof_qc_observe_event <- function(input, cytof_qc_control_var, cytof_qc_file_st
             qc_report)
         }
       })
-
 
       if (length(cytof_qc_file_statuses$successful_report_export_filenames) > 1) {
         cytof_qc_control_var$qc_report_export_success <- TRUE
