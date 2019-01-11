@@ -256,34 +256,45 @@ server <- function(input, output, session) {
 
   output$gating_inspection_and_visualization <- renderUI({
     if (cytof_qc_control_var$render_gating_inspection) {
-      fluidRow(
-        tags$hr(style="border-color: #C0C0C0;"),
-        column(4,
-          h3("Gating Inspection"),
-          p("Please choose a file name to render a gating visualization:"),
-          selectInput(inputId = "gating_filename", 
-                      label = "Filename",
-                      choices = cytof_qc_file_statuses$successful_report_export_filenames),
-          actionButton(inputId = "generate_gating_visualization",
-                      label = "Generate Gating Visualization", 
-                      icon = icon("area-chart")),
-          uiOutput("abnormal_gating_flag"),
-          htmlOutput("abnormal_gating_flag_status_message"),
-          uiOutput("undo_abnormal_gating_flag"),
-          htmlOutput("undo_abnormal_gating_flag_status_message")
+      cat('HERE: cytof_qc_control_var$render_gating_inspection')
+      fluidPage(
+        fluidRow(
+          tags$hr(style="border-color: #C0C0C0;"),
+          h3("QC Report Outputs"),
+          p(paste("This is the data present in the exported reports and will be",
+          "updated both here and in the exported reports when changes are made",
+          "in the \"Gating Inspection\" section below")),
+          uiOutput("cytof_qc_report_table")
         ),
-        column(5,
-          plotOutput("gating_visualization",
-            brush = brushOpts(
-              id = "manual_gating_brush"
-              ))
-        ), 
-        column(3,
-          uiOutput("manual_gating"),
-          htmlOutput("update_gating_status_message"),
-          uiOutput("update_qc_report"),
-          htmlOutput("generate_updated_qc_report_error_message"),
-          htmlOutput("export_updated_qc_report_status_message")
+        fluidRow(
+          tags$hr(style="border-color: #C0C0C0;"),
+          column(4,
+            h3("Gating Inspection"),
+            p("Please choose a file name to render a gating visualization:"),
+            selectInput(inputId = "gating_filename", 
+                        label = "Filename",
+                        choices = cytof_qc_file_statuses$successful_report_export_filenames),
+            actionButton(inputId = "generate_gating_visualization",
+                        label = "Generate Gating Visualization", 
+                        icon = icon("area-chart")),
+            uiOutput("abnormal_gating_flag"),
+            htmlOutput("abnormal_gating_flag_status_message"),
+            uiOutput("undo_abnormal_gating_flag"),
+            htmlOutput("undo_abnormal_gating_flag_status_message")
+          ),
+          column(5,
+            plotOutput("gating_visualization",
+              brush = brushOpts(
+                id = "manual_gating_brush"
+                ))
+          ), 
+          column(3,
+            uiOutput("manual_gating"),
+            htmlOutput("update_gating_status_message"),
+            uiOutput("update_qc_report"),
+            htmlOutput("generate_updated_qc_report_error_message"),
+            htmlOutput("export_updated_qc_report_status_message")
+          )
         )
       )     
     }
@@ -478,132 +489,6 @@ server <- function(input, output, session) {
 
     status_message
   })
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 ################### Sample Background Feature Outputs #############################
   output$sample_background_report_dir_selection_status <- renderUI({
