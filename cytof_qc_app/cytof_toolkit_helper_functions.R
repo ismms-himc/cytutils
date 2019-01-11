@@ -1,31 +1,3 @@
-fcs_import_file <- function(filename,
-                            return_original = FALSE,
-                            transformation = TRUE) {
-
-  fcs_data <- flowCore::read.FCS(filename, transformation)
-  data <- dplyr::as_data_frame(as.data.frame(fcs_data@exprs))
-  colnames(data) <- paste0(fcs_data@parameters@data$name, "_",
-                           fcs_data@parameters@data$desc)
-  # rename columns to be R-friendly
-  colnames(data) <- gsub("-| |#", "_", colnames(data))
-  
-  if (return_original) {
-    list(
-      data = data,
-      obj = fcs_data
-    )
-  } else {
-    dplyr::as_data_frame(data)
-  }
-}
-
-fcs_import_file_error_handler <- function(filename) {
-  tryCatch(fcs_import_file(filename, 
-                            return_original = TRUE),
-    error = function(e) { NULL }
-  )
-}
-
 fcs_find_channels <- function(fcs_data, channels) {
   fcs_data_channels <- colnames(fcs_data)
 
@@ -57,107 +29,50 @@ fcs_find_gating_channels <- function(fcs_data, channels) {
   )
 }
 
-mass_cytometry_pre_processing <- function(
-  fcs_data, cofactor, event_channel, dna_channel, bead_gates,
-  debris_num_gmms = 10, debris_gmm_subsample_n = 1000, debris_vote_thresh = 0.5,
-  verbose = TRUE) {
+fcs_import_file <- function(filename,
+                            return_original = FALSE,
+                            transformation = TRUE) {
 
-  start_t <- proc.time()
- 
-  # find the explicit channel name for each mass
-  fcs_event_channel <- fcs_find_channels(fcs_data, event_channel)
-  fcs_dna_channel <- fcs_find_channels(fcs_data, dna_channel)
-  fcs_bead_channels <- fcs_find_channels(fcs_data, bead_gates$channel)
-  # transform the data and add an index for later tracking
-  gating_data <- fcs_data[, c(fcs_event_channel,
-                              fcs_dna_channel,
-                              fcs_bead_channels)]
-  gating_data[, c(fcs_dna_channel, fcs_bead_channels)] <-
-    asinh(gating_data[, c(fcs_dna_channel, fcs_bead_channels)] / cofactor)
-  gating_data$index <- 1:nrow(gating_data)
+  fcs_data <- flowCore::read.FCS(filename, transformation)
+  data <- dplyr::as_data_frame(as.data.frame(fcs_data@exprs))
+  colnames(data) <- paste0(fcs_data@parameters@data$name, "_",
+                           fcs_data@parameters@data$desc)
+  # rename columns to be R-friendly
+  colnames(data) <- gsub("-| |#", "_", colnames(data))
   
-  # step 1: identify beads and bead-cell doublets using threshold
-  if (verbose) cat("identifying beads\n")
-  bead_data <- gating_data
-  for (bead_gate_idx in 1:nrow(bead_gates)) {
-    bead_gate <- bead_gates[bead_gate_idx, ]
-    bead_gate_channel <- fcs_find_channels(gating_data, bead_gate$channel)
-    bead_gate_data <- bead_data[[bead_gate_channel]]
-    bead_gate_indices <- which(bead_gate$min < bead_gate_data &
-                                 bead_gate_data < bead_gate$max)
-    bead_data <- bead_data[bead_gate_indices, ]
-
-  }
-  
-  bead_indices <- bead_data$index
-
-  gating_data <- dplyr::filter(gating_data, !(index %in% bead_indices))
-  # step 2: separate cells from debris
-  if (verbose) cat("identifying debris ... ")
-  t <- proc.time()
-  cell_indices <- gating_data$index
-  dna <- gating_data[[fcs_dna_channel]]
-  min_dna_index <- head(which(dna == min(dna)), 1)
-  
-  debris_votes <- lapply(1:debris_num_gmms, function(iter) {
-    # fit a GMM with three components to a subset of the data and use it to
-    # assign all of the data. lowest cluster is classified as debris
-    indices <- sample(1:length(dna), min(debris_gmm_subsample_n, length(dna)))
-    gmm <- Mclust(dna[indices], G = 3)
-    assignment <- predict(gmm, dna)$classification
-    min_cluster <- assignment[min_dna_index]
-    # sometimes the GMM finds a very "wide" cluster that covers debris and some
-    # doublets. in order to avoid removing doublets, cells with DNA intensity
-    # higher than most populated cluster are not removed
-    assignment_counts <- table(assignment)
-    most_populated_mean <- gmm$parameters$mean[
-      which(assignment_counts == max(assignment_counts))]
-    # return debris identification for each cell
-    dplyr::data_frame(
-      iter = iter,
-      index = cell_indices,
-      debris = (assignment == min_cluster) & (dna < most_populated_mean)
+  if (return_original) {
+    list(
+      data = data,
+      obj = fcs_data
     )
-  }) %>% dplyr::bind_rows()
-  
-  debris_indices <- debris_votes %>%
-    dplyr::group_by(index) %>%
-    dplyr::summarize(per_debris = mean(debris)) %>%
-    dplyr::filter(per_debris >= debris_vote_thresh) %>%
-    `$`(index)
-  
-  debris_data <- dplyr::filter(gating_data, index %in% debris_indices)
-  gating_data <- dplyr::filter(gating_data, !(index %in% debris_indices))
-  
-  cat(paste0(round((proc.time() - t)[3]), " seconds\n"))
+  } else {
+    dplyr::as_data_frame(data)
+  }
+}
 
-  # step 3: separate bead + cell doublets
-  bead_singlet_indices <- which(bead_data[[fcs_dna_channel]] <
-                                  min(gating_data[[fcs_dna_channel]]))
-
-  bead_cell_doublet_indices <- which(bead_data[[fcs_dna_channel]] >
-                                min(gating_data[[fcs_dna_channel]]))
-  
-  bead_cell_doublets_data <- bead_data[bead_cell_doublet_indices, ]
-  
-  bead_data <- bead_data[bead_singlet_indices, ]
-
-  list(
-    bead_data = bead_data,
-    debris_data = debris_data,
-    gating_data = gating_data,
-    bead_cell_doublets_data = bead_cell_doublets_data,
-    cell_indices = gating_data$index
+fcs_import_file_error_handler <- function(filename) {
+  tryCatch(fcs_import_file(filename, 
+                            return_original = TRUE),
+    error = function(e) { NULL }
   )
 }
 
-mass_cytometry_pre_processing_error_handler <- function(fcs_data, cofactor, 
-                            event_channel, dna_channel, 
-                            bead_gates) {
-  tryCatch(mass_cytometry_pre_processing(fcs_data, cofactor, 
-                            event_channel, dna_channel, 
-                            bead_gates),
-    error = function(e) { NULL }
+flag_abnormal_gating_in_exported_qc_report <- function(abnormal_gating_filename, cytof_qc_report_dir) {
+  filepath <- paste0(cytof_qc_report_dir, "/", abnormal_gating_filename, "_cytof_qc_report.csv")
+
+  qc_report <- read.csv(filepath)
+  qc_report$Abnormal.Gating <- 'True'
+  write.csv(qc_report, filepath, row.names = FALSE)
+
+  # We implicitly return "Successful" so that abnormal_gating_flag_transfer_status
+  # is not undefined if we reach the end of the function without raising an error.
+  "Successful"
+}
+
+flag_abnormal_gating_in_exported_qc_report_error_handler <- function(abnormal_gating_filename,
+                                                                      cytof_qc_report_dir) {
+ tryCatch(flag_abnormal_gating_in_exported_qc_report(abnormal_gating_filename, cytof_qc_report_dir),
+    error = function(e) { "Unsuccessful" }
   )
 }
 
@@ -305,32 +220,6 @@ generate_sample_background_report_error_handler <- function(background_fcs_data,
 }
 
 
-sample_background_report_export_error_handler <- function(sample_background_report_dir_path,
-                                                            sample_background_report,
-                                                            fcs_filename) {
-  filepath <- paste0(sample_background_report_dir_path, "/", fcs_filename, "_sample_background_report.csv")
-  tryCatch(write.csv(sample_background_report, 
-                      filepath, row.names = FALSE),
-    error = function(e) { "Unsuccessful" })
-}
-
-# http://jeromyanglim.tumblr.com/post/33418725712/how-to-source-all-r-files-in-a-directory
-source_dir <- function(path, trace = TRUE, ...) {
-    for (nm in list.files(path, pattern = "\\.[RrSsQq]$")) {
-       if(trace) cat(nm,":")           
-       source(file.path(path, nm), ...)
-       if(trace) cat("\n")
-    }
-}
-
-# Computes the robust" CV, as defined by FlowJo
-# See http://www.flowjo.com/v76/en/statdefinitions.html
-
-rcv <- function(x) {
-  as.numeric(100 * 0.5 *
-             (quantile(x, 0.8413) - quantile(x, 0.1587)) / median(x))
-}
-
 generate_qc_report <- function(fcs_data,  fcs_filename, fcs_data_pre_processing, cofactor, qc_reporter_version, ab_gate = "False") {
   qc_report_timestamp <- Sys.time()
   gating_data <- fcs_data$data[fcs_data_pre_processing$gating_data$index, ]
@@ -392,13 +281,108 @@ generate_qc_report_error_handler <- function(fcs_data,
   )
 }
 
-qc_report_export_error_handler <- function(cytof_qc_report_dir_path,
-                                                            qc_report,
-                                                            fcs_filename) {
-  filepath <- paste0(cytof_qc_report_dir_path, "/", fcs_filename, "_cytof_qc_report.csv")
-  tryCatch(write.csv(qc_report, 
-                      filepath, row.names = FALSE),
-    error = function(e) { "Unsuccessful" })
+mass_cytometry_pre_processing <- function(
+  fcs_data, cofactor, event_channel, dna_channel, bead_gates,
+  debris_num_gmms = 10, debris_gmm_subsample_n = 1000, debris_vote_thresh = 0.5,
+  verbose = TRUE) {
+
+  start_t <- proc.time()
+ 
+  # find the explicit channel name for each mass
+  fcs_event_channel <- fcs_find_channels(fcs_data, event_channel)
+  fcs_dna_channel <- fcs_find_channels(fcs_data, dna_channel)
+  fcs_bead_channels <- fcs_find_channels(fcs_data, bead_gates$channel)
+  # transform the data and add an index for later tracking
+  gating_data <- fcs_data[, c(fcs_event_channel,
+                              fcs_dna_channel,
+                              fcs_bead_channels)]
+  gating_data[, c(fcs_dna_channel, fcs_bead_channels)] <-
+    asinh(gating_data[, c(fcs_dna_channel, fcs_bead_channels)] / cofactor)
+  gating_data$index <- 1:nrow(gating_data)
+  
+  # step 1: identify beads and bead-cell doublets using threshold
+  if (verbose) cat("identifying beads\n")
+  bead_data <- gating_data
+  for (bead_gate_idx in 1:nrow(bead_gates)) {
+    bead_gate <- bead_gates[bead_gate_idx, ]
+    bead_gate_channel <- fcs_find_channels(gating_data, bead_gate$channel)
+    bead_gate_data <- bead_data[[bead_gate_channel]]
+    bead_gate_indices <- which(bead_gate$min < bead_gate_data &
+                                 bead_gate_data < bead_gate$max)
+    bead_data <- bead_data[bead_gate_indices, ]
+
+  }
+  
+  bead_indices <- bead_data$index
+
+  gating_data <- dplyr::filter(gating_data, !(index %in% bead_indices))
+  # step 2: separate cells from debris
+  if (verbose) cat("identifying debris ... ")
+  t <- proc.time()
+  cell_indices <- gating_data$index
+  dna <- gating_data[[fcs_dna_channel]]
+  min_dna_index <- head(which(dna == min(dna)), 1)
+  
+  debris_votes <- lapply(1:debris_num_gmms, function(iter) {
+    # fit a GMM with three components to a subset of the data and use it to
+    # assign all of the data. lowest cluster is classified as debris
+    indices <- sample(1:length(dna), min(debris_gmm_subsample_n, length(dna)))
+    gmm <- Mclust(dna[indices], G = 3)
+    assignment <- predict(gmm, dna)$classification
+    min_cluster <- assignment[min_dna_index]
+    # sometimes the GMM finds a very "wide" cluster that covers debris and some
+    # doublets. in order to avoid removing doublets, cells with DNA intensity
+    # higher than most populated cluster are not removed
+    assignment_counts <- table(assignment)
+    most_populated_mean <- gmm$parameters$mean[
+      which(assignment_counts == max(assignment_counts))]
+    # return debris identification for each cell
+    dplyr::data_frame(
+      iter = iter,
+      index = cell_indices,
+      debris = (assignment == min_cluster) & (dna < most_populated_mean)
+    )
+  }) %>% dplyr::bind_rows()
+  
+  debris_indices <- debris_votes %>%
+    dplyr::group_by(index) %>%
+    dplyr::summarize(per_debris = mean(debris)) %>%
+    dplyr::filter(per_debris >= debris_vote_thresh) %>%
+    `$`(index)
+  
+  debris_data <- dplyr::filter(gating_data, index %in% debris_indices)
+  gating_data <- dplyr::filter(gating_data, !(index %in% debris_indices))
+  
+  cat(paste0(round((proc.time() - t)[3]), " seconds\n"))
+
+  # step 3: separate bead + cell doublets
+  bead_singlet_indices <- which(bead_data[[fcs_dna_channel]] <
+                                  min(gating_data[[fcs_dna_channel]]))
+
+  bead_cell_doublet_indices <- which(bead_data[[fcs_dna_channel]] >
+                                min(gating_data[[fcs_dna_channel]]))
+  
+  bead_cell_doublets_data <- bead_data[bead_cell_doublet_indices, ]
+  
+  bead_data <- bead_data[bead_singlet_indices, ]
+
+  list(
+    bead_data = bead_data,
+    debris_data = debris_data,
+    gating_data = gating_data,
+    bead_cell_doublets_data = bead_cell_doublets_data,
+    cell_indices = gating_data$index
+  )
+}
+
+mass_cytometry_pre_processing_error_handler <- function(fcs_data, cofactor, 
+                            event_channel, dna_channel, 
+                            bead_gates) {
+  tryCatch(mass_cytometry_pre_processing(fcs_data, cofactor, 
+                            event_channel, dna_channel, 
+                            bead_gates),
+    error = function(e) { NULL }
+  )
 }
 
 prepare_for_gating_inspection <- function(fcs_filename, fcs_data_pre_processing, cytof_qc_gating_inspection) {
@@ -431,47 +415,22 @@ prepare_for_gating_inspection <- function(fcs_filename, fcs_data_pre_processing,
   cytof_qc_gating_inspection$pre_processed_data[[target_index]] <- fcs_data_for_visualization
 }
 
-
-
-flag_abnormal_gating_in_exported_qc_report_error_handler <- function(abnormal_gating_filename,
-                                                                      cytof_qc_report_dir) {
- tryCatch(flag_abnormal_gating_in_exported_qc_report(abnormal_gating_filename, cytof_qc_report_dir),
-    error = function(e) { "Unsuccessful" }
-  )
+qc_report_export_error_handler <- function(cytof_qc_report_dir_path,
+                                                            qc_report,
+                                                            fcs_filename) {
+  filepath <- paste0(cytof_qc_report_dir_path, "/", fcs_filename, "_cytof_qc_report.csv")
+  tryCatch(write.csv(qc_report, 
+                      filepath, row.names = FALSE),
+    error = function(e) { "Unsuccessful" })
 }
 
-flag_abnormal_gating_in_exported_qc_report <- function(abnormal_gating_filename, cytof_qc_report_dir) {
-  filepath <- paste0(cytof_qc_report_dir, "/", abnormal_gating_filename, "_cytof_qc_report.csv")
+# Computes the robust" CV, as defined by FlowJo
+# See http://www.flowjo.com/v76/en/statdefinitions.html
 
-  qc_report <- read.csv(filepath)
-  qc_report$Abnormal.Gating <- 'True'
-  write.csv(qc_report, filepath, row.names = FALSE)
-
-  # We implicitly return "Successful" so that abnormal_gating_flag_transfer_status
-  # is not undefined if we reach the end of the function without raising an error.
-  "Successful"
+rcv <- function(x) {
+  as.numeric(100 * 0.5 *
+             (quantile(x, 0.8413) - quantile(x, 0.1587)) / median(x))
 }
-
-
-unflag_abnormal_gating_in_previously_exported_qc_report_error_handler <- function(normal_gating_filename,
-                                                                      cytof_qc_report_dir) {
- tryCatch(unflag_abnormal_gating_in_previously_exported_qc_report(normal_gating_filename, cytof_qc_report_dir),
-    error = function(e) { "Unsuccessful" }
-  )
-}
-
-unflag_abnormal_gating_in_previously_exported_qc_report <- function(normal_gating_filename, cytof_qc_report_dir) {
-  filepath <- paste0(cytof_qc_report_dir, "/", normal_gating_filename, "_cytof_qc_report.csv")
-
-  qc_report <- read.csv(filepath)
-  qc_report$Abnormal.Gating <- 'False'
-  write.csv(qc_report, filepath, row.names = FALSE)
-
-  # We implicitly return "Successful" so that abnormal_gating_flag_transfer_status
-  # is not undefined if we reach the end of the function without raising an error.
-  "Successful"
-}
-
 
 reformat_manually_gated_pre_processed_data <- function(pre_processed_manually_gated_data) {
   bead_data_rows <- which(pre_processed_manually_gated_data$category == "bead")
@@ -492,4 +451,41 @@ reformat_manually_gated_pre_processed_data <- function(pre_processed_manually_ga
     gating_data = gating_data,
     cell_indices = gating_data$index
   )
+}
+
+sample_background_report_export_error_handler <- function(sample_background_report_dir_path,
+                                                            sample_background_report,
+                                                            fcs_filename) {
+  filepath <- paste0(sample_background_report_dir_path, "/", fcs_filename, "_sample_background_report.csv")
+  tryCatch(write.csv(sample_background_report, 
+                      filepath, row.names = FALSE),
+    error = function(e) { "Unsuccessful" })
+}
+
+# http://jeromyanglim.tumblr.com/post/33418725712/how-to-source-all-r-files-in-a-directory
+source_dir <- function(path, trace = TRUE, ...) {
+    for (nm in list.files(path, pattern = "\\.[RrSsQq]$")) {
+       if(trace) cat(nm,":")           
+       source(file.path(path, nm), ...)
+       if(trace) cat("\n")
+    }
+}
+
+unflag_abnormal_gating_in_previously_exported_qc_report_error_handler <- function(normal_gating_filename,
+                                                                      cytof_qc_report_dir) {
+ tryCatch(unflag_abnormal_gating_in_previously_exported_qc_report(normal_gating_filename, cytof_qc_report_dir),
+    error = function(e) { "Unsuccessful" }
+  )
+}
+
+unflag_abnormal_gating_in_previously_exported_qc_report <- function(normal_gating_filename, cytof_qc_report_dir) {
+  filepath <- paste0(cytof_qc_report_dir, "/", normal_gating_filename, "_cytof_qc_report.csv")
+
+  qc_report <- read.csv(filepath)
+  qc_report$Abnormal.Gating <- 'False'
+  write.csv(qc_report, filepath, row.names = FALSE)
+
+  # We implicitly return "Successful" so that abnormal_gating_flag_transfer_status
+  # is not undefined if we reach the end of the function without raising an error.
+  "Successful"
 }
