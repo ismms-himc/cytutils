@@ -219,8 +219,9 @@ generate_sample_background_report_error_handler <- function(background_fcs_data,
   )
 }
 
-
 generate_qc_report <- function(fcs_data,  fcs_filename, fcs_data_pre_processing, cofactor, qc_reporter_version, ab_gate = "False") {
+  View(fcs_data$data)
+
   qc_report_timestamp <- Sys.time()
   gating_data <- fcs_data$data[fcs_data_pre_processing$gating_data$index, ]
   bead_data <- fcs_data$data[fcs_data_pre_processing$bead_data$index, ]
@@ -234,7 +235,10 @@ generate_qc_report <- function(fcs_data,  fcs_filename, fcs_data_pre_processing,
   bead_ce140 <- bead_data[[fcs_find_channels(bead_data, "Ce140")]]
   bead_gd156 <- bead_data[[fcs_find_channels(bead_data, "Gd156")]]
   bead_lu175 <- bead_data[[fcs_find_channels(bead_data, "Lu175")]]
-  bead_lu176 <- bead_data[[fcs_find_channels(bead_data, "Lu176")]]
+
+  bead_176 <-   tryCatch(bead_data[[fcs_find_channels(bead_data, "Lu176")]],
+    error = function(e) {  bead_data[[fcs_find_channels(bead_data, "Yb176")]] }
+  )
 
   qc_report <-
     dplyr::data_frame(
@@ -259,8 +263,8 @@ generate_qc_report <- function(fcs_data,  fcs_filename, fcs_data_pre_processing,
       `Oxide%` = `Gd156 Median` / `Ce140 Median`,
       `Eu153 vs Time` = cor(bead_time, asinh(bead_eu153 / cofactor)),
       `Lu175 Median` = median(bead_lu175),
-      `Lu176 Median` = median(bead_lu176),
-      `Ratio Lu175/Lu176` = `Lu175 Median` / `Lu176 Median`,
+      `Lu/Yb176 Median` = median(bead_176),
+      `Ratio (Lu175)/(Lu/Yb176)` = `Lu175 Median` / `Lu/Yb176 Median`,
       `Abnormal Gating` = ab_gate
     )
 }
