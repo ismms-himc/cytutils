@@ -4,19 +4,22 @@
 # install.packages("shinyFiles")
 # install.packages("mclust")
 # install.packages("dplyr")
+# install.packages("plyr")
 # install.packages("ggplot2")
 # install.packages("robustbase")
 # install.packages("flowCore")
 # install.packages("matrixStats")
-
+# install.packages("DT")
 library(shiny)
 library(shinydashboard)
 library(mclust)
 library(dplyr)
+library(plyr)
 library(flowCore)
 library(ggplot2)
 library(robustbase)
 library(matrixStats)
+library(DT)
 source("./cytof_toolkit_helper_functions.R")
 source("./ui.R")
 source_dir("./server_modules")
@@ -98,6 +101,7 @@ server <- function(input, output, session) {
   # list in amortized constant time.
   # https://stackoverflow.com/questions/2436688/append-an-object-to-a-list-in-r-in-amortized-constant-time-o1
   cytof_qc_gating_inspection <- reactiveValues(pre_processed_data = vector("list", 1000),
+                                              cytof_qc_report_tables = vector("list", 0),
                                               currently_rendered_gating_filename = "")
 
   # The below are sourced from "./server_modules". They handle the logic of 
@@ -254,9 +258,13 @@ server <- function(input, output, session) {
     success_message
   })
 
+  output$cytof_qc_report_table <- DT::renderDataTable({
+    all_qc_reports <- ldply(cytof_qc_gating_inspection$cytof_qc_report_tables, data.frame, .id=NULL)
+    all_qc_reports
+  })
+
   output$gating_inspection_and_visualization <- renderUI({
     if (cytof_qc_control_var$render_gating_inspection) {
-      cat('HERE: cytof_qc_control_var$render_gating_inspection')
       fluidPage(
         fluidRow(
           tags$hr(style="border-color: #C0C0C0;"),
@@ -264,7 +272,7 @@ server <- function(input, output, session) {
           p(paste("This is the data present in the exported reports and will be",
           "updated both here and in the exported reports when changes are made",
           "in the \"Gating Inspection\" section below")),
-          uiOutput("cytof_qc_report_table")
+          DT::dataTableOutput("cytof_qc_report_table")
         ),
         fluidRow(
           tags$hr(style="border-color: #C0C0C0;"),
