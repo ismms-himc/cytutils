@@ -76,6 +76,7 @@ cytof_qc_generate_updated_qc_report_observe_event <- function(input, output, cyt
 	    if (is.null(qc_report_export_status)) {
           cytof_qc_control_var$updated_qc_report_export_success <- TRUE
           cytof_qc_file_statuses$successful_updated_qc_report_export_filename <- fcs_filename
+          cytof_qc_gating_inspection$cytof_qc_report_tables[[fcs_filename]] <- updated_qc_report
 	    } else if (sample_background_report_export_status == "Unsuccessful"){
           cytof_qc_control_var$updated_qc_report_export_error <- TRUE
           cytof_qc_file_statuses$unsuccessful_updated_qc_report_export_filename <- fcs_filename
