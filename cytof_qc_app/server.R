@@ -84,7 +84,8 @@ server <- function(input, output, session) {
                 background_report_generation_success = FALSE,
                 sample_background_report_export_success = FALSE,
                 sample_background_report_export_error = FALSE,
-                is_output_dir_chosen_before_upload = TRUE
+                is_output_dir_chosen_before_upload = TRUE,
+                sample_background_report_tables = vector("list", 0)
                 )
 
   sample_background_file_statuses <- reactiveValues(unsuccessful_fcs_file_import_filenames = "",
@@ -516,6 +517,25 @@ server <- function(input, output, session) {
         style = "color: green; font-size: 14px; margin: 10px;")
     } 
   })
+
+  output$sample_background_report_table_section <- renderUI({
+    if (sample_background_control_var$sample_background_report_export_success) {
+      fluidPage(
+        fluidRow(
+          tags$hr(style="border-color: #C0C0C0;"),
+          h3("Sample Background Report Outputs"),
+          DT::dataTableOutput("sample_background_report_table")
+        )
+      )     
+    }
+  })
+
+  output$sample_background_report_table <- DT::renderDataTable({
+    all_sample_background_reports <- ldply(sample_background_control_var$sample_background_report_tables, data.frame, .id=NULL, check.names=FALSE)
+    all_sample_background_reports
+    }, options = list(scrollX = TRUE),
+      rownames=FALSE
+  )
 
   output$sample_background_invalid_file_type <- renderUI({
     if (!sample_background_control_var$is_uploaded_file_type_valid) {
