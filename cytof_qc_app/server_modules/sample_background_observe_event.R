@@ -132,6 +132,7 @@ shinyDirChoose(input, id = "sample_background_report_dir", roots = c(home = '~')
             sample_background_control_var$sample_background_report_export_success <- TRUE
             sample_background_file_statuses$successful_report_export_filenames <- c(sample_background_file_statuses$successful_report_export_filenames,
                                                                                     background_data_filename)
+            sample_background_control_var$sample_background_report_tables[[background_data_filename]] <- sample_background_report
           } else if (sample_background_report_export_status == "Unsuccessful"){
             sample_background_control_var$sample_background_report_export_error <- TRUE
             sample_background_file_statuses$unsuccessful_report_export_filenames <- c(sample_background_file_statuses$unsuccessful_report_export_filenames,
