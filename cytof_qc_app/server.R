@@ -259,9 +259,11 @@ server <- function(input, output, session) {
   })
 
   output$cytof_qc_report_table <- DT::renderDataTable({
-    all_qc_reports <- ldply(cytof_qc_gating_inspection$cytof_qc_report_tables, data.frame, .id=NULL)
+    all_qc_reports <- ldply(cytof_qc_gating_inspection$cytof_qc_report_tables, data.frame, .id=NULL, check.names=FALSE)
     all_qc_reports
-  })
+    }, options = list(scrollX = TRUE),
+      rownames=FALSE
+  )
 
   output$gating_inspection_and_visualization <- renderUI({
     if (cytof_qc_control_var$render_gating_inspection) {
