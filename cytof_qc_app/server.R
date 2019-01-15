@@ -533,7 +533,6 @@ server <- function(input, output, session) {
   output$sample_background_report_table <- DT::renderDataTable({
     all_sample_background_reports <- ldply(sample_background_control_var$sample_background_report_tables, data.frame, .id=NULL, check.names=FALSE)
     all_sample_background_reports[is.na(all_sample_background_reports)] <- 'NA'
-    View(all_sample_background_reports)
     all_sample_background_reports
     }, options = list(scrollX = TRUE),
       rownames=FALSE
