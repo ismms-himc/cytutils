@@ -1,5 +1,6 @@
 library(flowCore)
 library(shinyFiles)
+library(stringr)
 
 # default gating configuration
 event_channel <- "Event_length"
@@ -25,10 +26,9 @@ cytof_qc_observe_event <- function(input, cytof_qc_control_var, cytof_qc_file_st
     cytof_qc_report_dir <- input$cytof_qc_report_dir
 
     if (class(cytof_qc_report_dir) != "integer") {
-      cytof_qc_report_dir_path <- file.path(paste(unlist(cytof_qc_report_dir$path[-1]), collapse = .Platform$file.sep))
 
-      
-      cytof_qc_report_dir_path <- paste0(.Platform$file.sep, cytof_qc_report_dir_path)
+      root_drive <- str_sub(cytof_qc_report_dir$root, -3, -2)
+      cytof_qc_report_dir_path <- file.path(root_drive, paste(unlist(cytof_qc_report_dir$path[-1]), collapse = .Platform$file.sep))
 
       if (file.exists(cytof_qc_report_dir_path)) {
         cytof_qc_control_var$cytof_qc_report_dir_valid <- TRUE
