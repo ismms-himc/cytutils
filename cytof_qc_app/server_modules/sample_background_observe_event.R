@@ -28,7 +28,7 @@ shinyDirChoose(input, id = "sample_background_report_dir", roots = getVolumes())
 
 
     if (class(sample_background_report_dir) != "integer") {
-      root_drive <- str_sub(cytof_qc_report_dir$root, -3, -2)
+      root_drive <- str_sub(sample_background_report_dir$root, -3, -2)
       sample_background_report_dir_path <- file.path(root_drive, paste(unlist(sample_background_report_dir$path[-1]), collapse = .Platform$file.sep))
 
       if (file.exists(sample_background_report_dir_path)) {
