@@ -24,15 +24,35 @@ shinyDirChoose(input, id = "sample_background_report_dir", roots = getVolumes())
     sample_background_file_statuses$sample_background_report_dir <- ""
 
     sample_background_report_dir <- input$sample_background_report_dir
-    home <- normalizePath("~")
-    sample_background_report_dir_path <- file.path(home, paste(unlist(sample_background_report_dir$path[-1]), collapse = .Platform$file.sep))
 
-    if (file.exists(sample_background_report_dir_path)) {
-      sample_background_control_var$sample_background_report_dir_valid <- TRUE
-      sample_background_file_statuses$sample_background_report_dir <- sample_background_report_dir_path
-    } else {
-      sample_background_control_var$sample_background_report_dir_invalid <- TRUE
+
+    if (class(sample_background_report_dir) != "integer") {
+      sample_background_report_dir_path <- file.path(paste(unlist(sample_background_report_dir$path[-1]), collapse = .Platform$file.sep))
+
+      sample_background_report_dir_path <- paste0(.Platform$file.sep, sample_background_report_dir_path)
+      cat(paste('sample_background_report_dir_path!!!: ', sample_background_report_dir_path))
+
+      if (file.exists(sample_background_report_dir_path)) {
+        sample_background_control_var$sample_background_report_dir_valid <- TRUE
+        sample_background_file_statuses$sample_background_report_dir <- sample_background_report_dir_path
+      } else {
+        sample_background_control_var$sample_background_report_dir_invalid <- TRUE
+      }
     }
+
+
+
+
+
+    # home <- normalizePath("~")
+    # sample_background_report_dir_path <- file.path(home, paste(unlist(sample_background_report_dir$path[-1]), collapse = .Platform$file.sep))
+
+    # if (file.exists(sample_background_report_dir_path)) {
+      # sample_background_control_var$sample_background_report_dir_valid <- TRUE
+      # sample_background_file_statuses$sample_background_report_dir <- sample_background_report_dir_path
+    # } else {
+    #   sample_background_control_var$sample_background_report_dir_invalid <- TRUE
+    # }
   })
 
 
