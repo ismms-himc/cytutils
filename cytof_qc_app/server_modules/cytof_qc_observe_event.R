@@ -24,9 +24,21 @@ cytof_qc_observe_event <- function(input, cytof_qc_control_var, cytof_qc_file_st
     cytof_qc_file_statuses$cytof_qc_report_dir <- ""
 
     cytof_qc_report_dir <- input$cytof_qc_report_dir
-    home <- normalizePath("~")
-    cytof_qc_report_dir_path <- file.path(home, paste(unlist(cytof_qc_report_dir$path[-1]), 
-                                          collapse = .Platform$file.sep))
+    # home <- normalizePath("~")
+
+    # cytof_qc_report_dir_path <- file.path(home, paste(unlist(cytof_qc_report_dir$path[-1]), 
+    #                                       collapse = .Platform$file.sep))
+    # cat('FILEPATH IN THE MAKING:')
+    # cat(file.path(paste(unlist(cytof_qc_report_dir$path[-1]), collapse = .Platform$file.sep)))
+    # cat('\n')
+    # cat('WITH HOME:')
+    # cat(file.path(home, paste(unlist(cytof_qc_report_dir$path[-1]), 
+    #                                       collapse = .Platform$file.sep)))
+
+    cytof_qc_report_dir_path <- file.path(paste(unlist(cytof_qc_report_dir$path[-1]), collapse = .Platform$file.sep))
+    if (.Platform$file.sep == '/') {
+      cytof_qc_report_dir_path <- paste0('/', cytof_qc_report_dir_path)
+    }
 
     cat(paste('cytof_qc_report_dir_path!!!!!: ', cytof_qc_report_dir_path))
     if (file.exists(cytof_qc_report_dir_path)) {
