@@ -37,8 +37,6 @@ cytof_qc_observe_event <- function(input, cytof_qc_control_var, cytof_qc_file_st
         cytof_qc_control_var$cytof_qc_report_dir_invalid <- TRUE
       }
     }
-
-
   })
 
   observeEvent(input$cytof_qc_file, {
