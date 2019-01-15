@@ -1,4 +1,5 @@
 library(flowCore)
+library(shinyFiles)
 
 # default gating configuration
 event_channel <- "Event_length"
@@ -11,7 +12,7 @@ bead_gates <- dplyr::data_frame(
 cofactor <- 5
 
 cytof_qc_observe_event <- function(input, cytof_qc_control_var, cytof_qc_file_statuses, cytof_qc_gating_inspection) {
-  shinyDirChoose(input, id = "cytof_qc_report_dir", roots = c(home = '~'))
+  shinyDirChoose(input, id = "cytof_qc_report_dir", roots = getVolumes())
 
   observeEvent(input$cytof_qc_report_dir, {
     # We reset the reactive values of our cytof_qc_control_var so that our error 
@@ -27,6 +28,7 @@ cytof_qc_observe_event <- function(input, cytof_qc_control_var, cytof_qc_file_st
     cytof_qc_report_dir_path <- file.path(home, paste(unlist(cytof_qc_report_dir$path[-1]), 
                                           collapse = .Platform$file.sep))
 
+    cat(paste('cytof_qc_report_dir_path!!!!!: ', cytof_qc_report_dir_path))
     if (file.exists(cytof_qc_report_dir_path)) {
       cytof_qc_control_var$cytof_qc_report_dir_valid <- TRUE
       cytof_qc_file_statuses$cytof_qc_report_dir <- cytof_qc_report_dir_path

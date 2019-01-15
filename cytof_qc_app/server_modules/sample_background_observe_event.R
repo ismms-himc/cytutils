@@ -1,4 +1,5 @@
 library(flowCore)
+library(shinyFiles)
 source("./cytof_toolkit_helper_functions.R")
 
 # default gating configuration
@@ -12,7 +13,7 @@ bead_gates <- dplyr::data_frame(
 cofactor <- 5
 
 sample_background_observe_event <- function(input, sample_background_control_var, sample_background_file_statuses) {
-shinyDirChoose(input, id = "sample_background_report_dir", roots = c(home = '~'))
+shinyDirChoose(input, id = "sample_background_report_dir", roots = getVolumes())
 
   observeEvent(input$sample_background_report_dir, {
     # We reset the reactive values of our sample_background_control_var so that our error 
