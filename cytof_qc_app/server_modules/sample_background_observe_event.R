@@ -1,5 +1,6 @@
 library(flowCore)
 library(shinyFiles)
+library(stringr)
 source("./cytof_toolkit_helper_functions.R")
 
 # default gating configuration
