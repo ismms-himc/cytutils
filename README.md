@@ -275,16 +275,17 @@ This app operates under the following assumptions:
 2. Install R package dependencies by running the following in an R session:
 
 ```r
+install.packages("dplyr")
+install.packages("DT")
+install.packages("ggplot2")
+install.packages("matrixStats")
+install.packages("mclust")
+install.packages("plyr")
+install.packages("robustbase")
 install.packages("shiny")
 install.packages("shinydashboard")
 install.packages("shinyFiles")
-install.packages("mclust")
-install.packages("dplyr")
-install.packages("plyr")
-install.packages("ggplot2")
-install.packages("robustbase")
-install.packages("matrixStats")
-install.packages("DT")
+install.packages("stringr")
 
 source("https://bioconductor.org/biocLite.R")
 biocLite('flowCore')
