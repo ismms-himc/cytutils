@@ -349,6 +349,9 @@ If a sample was not successfully processed, a csv file will not be exported for
 the file. However, this will not affect export of sample background report files
 for successfully processed files.
 
+In addition, the the results being exported, a `Sample Background Report Outputs` 
+section will appear and render the results on the screen.
+
 #### CyTOF QC Report Generator
 
 This interface allows users to upload FCS files and export a separate cytof 
@@ -369,9 +372,12 @@ by clicking the `Choose directory` button.
 2. Upload one or multiple FCS files by clicking the `Browse...` button.
 ![cytof_qc_file_upload_success_screenshot_img][cytof_qc_file_upload_success_screenshot]
 
-3. A `Gating Inspection` section will render on the lower half of the screen. Select
-the file you would like to visualize gates for and click the `Generate Gating Visualization`
-button.
+3. Upon success, two things will happen:
+	-  A `QC Report Outputs` section will render in the middle third of the app 
+	screen. This will show the results that were exported.
+	-  A `Gating Inspection` section will render on the lower half of the screen. 
+	Select the file you would like to visualize gates for and click the `Generate 
+	Gating Visualization` button.
 
 4. If the gating visualization looks abnormal, click the `Flag Abnormal Gating`
 button. Note: This action can be undone by clicking `Undo Abnormal Gating Flag`.
@@ -383,13 +389,12 @@ and click `Update Gating`.
 
 6. When you are satisfied with how the plot looks, click the `Update QC Report` 
 button to update the previously exported QC report with new values based on your 
-manual gates.
+manual gates. The table in the `QC Report Outputs` section will also be updated.
 
 ![cytof_qc_gating_screenshot_img][cytof_qc_gating_screenshot]
 
 
 [app_launch_screenshot]: cytof_qc_app/docs/app_launch_screenshot.png
-[sample_bckg_success_screenshot]: cytof_qc_app/docs/sample_background_tracking_success.png
-[sample_bckg_success_screenshot]: cytof_qc_app/docs/sample_background_tracking_success.png
-[cytof_qc_file_upload_success_screenshot]: cytof_qc_app/docs/cytof_qc_report_file_upload_screenshot.png
-[cytof_qc_gating_screenshot]: cytof_qc_app/docs/cytof_qc_report_gating_screenshot.png
+[sample_bckg_success_screenshot]: cytof_qc_app/docs/cytof_qc_app_sample_background_tracking.png
+[cytof_qc_file_upload_success_screenshot]: cytof_qc_app_file_upload_and_report_tables.png
+[cytof_qc_gating_screenshot]: cytof_qc_app/docs/cytof_qc_app_gating_inspection.png
