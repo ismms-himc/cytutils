@@ -220,8 +220,6 @@ generate_sample_background_report_error_handler <- function(background_fcs_data,
 }
 
 generate_qc_report <- function(fcs_data,  fcs_filename, fcs_data_pre_processing, cofactor, qc_reporter_version, ab_gate = "False") {
-  View(fcs_data$data)
-
   qc_report_timestamp <- Sys.time()
   gating_data <- fcs_data$data[fcs_data_pre_processing$gating_data$index, ]
   bead_data <- fcs_data$data[fcs_data_pre_processing$bead_data$index, ]
