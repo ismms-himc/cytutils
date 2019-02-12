@@ -261,6 +261,8 @@ server <- function(input, output, session) {
 
   output$cytof_qc_report_table <- DT::renderDataTable({
     all_qc_reports <- ldply(cytof_qc_gating_inspection$cytof_qc_report_tables, data.frame, .id=NULL, check.names=FALSE)
+    View(all_qc_reports)
+    write.table(all_qc_reports, "clipboard", sep="\t", row.names=FALSE, col.names=FALSE)
     all_qc_reports
     }, options = list(scrollX = TRUE),
       rownames=FALSE
@@ -533,6 +535,8 @@ server <- function(input, output, session) {
   output$sample_background_report_table <- DT::renderDataTable({
     all_sample_background_reports <- ldply(sample_background_control_var$sample_background_report_tables, data.frame, .id=NULL, check.names=FALSE)
     all_sample_background_reports[is.na(all_sample_background_reports)] <- 'NA'
+    View(all_sample_background_reports)
+    write.table(all_sample_background_reports, "clipboard", sep="\t", row.names=FALSE, col.names=FALSE)
     all_sample_background_reports
     }, options = list(scrollX = TRUE),
       rownames=FALSE
