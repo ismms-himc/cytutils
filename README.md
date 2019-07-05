@@ -9,7 +9,7 @@ adeeb.rahman@mssm.edu with suggestions and questions.
 Install `libcurl-dev`. E.g., on Ubuntu type:
 
 ```bash
-sudo apt-get install libcurl4-openssl-dev
+sudo apt-get install libcurl4-openssl-dev libssl-dev
 ```
 
 The `cytutils` package is currently only available as a direct installation from
