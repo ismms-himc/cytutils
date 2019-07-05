@@ -20,6 +20,13 @@ library(ggplot2)
 library(robustbase)
 library(matrixStats)
 library(DT)
+
+if(!require(viridis)){
+  install.packages("viridis")
+  library(viridis)
+}
+
+
 source("./cytof_toolkit_helper_functions.R")
 source("./ui.R")
 source_dir("./server_modules")
@@ -262,7 +269,8 @@ server <- function(input, output, session) {
   output$cytof_qc_report_table <- DT::renderDataTable({
     all_qc_reports <- ldply(cytof_qc_gating_inspection$cytof_qc_report_tables, data.frame, .id=NULL, check.names=FALSE)
     View(all_qc_reports)
-    write.table(all_qc_reports, "clipboard", sep="\t", row.names=FALSE, col.names=FALSE)
+    write.table(all_qc_reports, pipe("xclip -i", "w"), sep="\t", row.names=FALSE, col.names=FALSE)
+    gc()
     all_qc_reports
     }, options = list(scrollX = TRUE),
       rownames=FALSE

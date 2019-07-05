@@ -21,6 +21,11 @@ qc_report_app_tab_item <- tabItem(tabName = "qc_report_app",
                                     "Report results will be exported in a",
                                     "cytof_qc_report.csv in the location chosen",
                                     "above.")),
+                          br(),
+                          checkboxGroupInput(inputId = "checkGroup", 
+                                             label = NULL, 
+                                             choices = list("Generate Channel vs Time plot" = 1)
+                                             ),
                           fileInput(
                             # NB: Regarding all inputId's, inputId is assigned to 
                             # singular "x_file" because under most circumstances, a single

@@ -491,3 +491,42 @@ unflag_abnormal_gating_in_previously_exported_qc_report <- function(normal_gatin
   # is not undefined if we reach the end of the function without raising an error.
   "Successful"
 }
+
+## Darwin added functions
+
+plot_channel_time <- function(fcs_data, fcs_filename, cytof_qc_report_dir) {
+  
+  df <- fcs_data
+  cols <- colnames(df)
+  colnames(df)[grep("Time", cols)] <- "Time"
+  channels <- cols[3:(length(cols)-4)]
+  # omit <- c("Center", "Time", "Event_length", "Offset", "Width", "Residual", "bc_separation_dist", "mahalanobis_dist")
+  # print(channels)
+  # print(head(df))
+  
+  plotChannelsOverTime <- function(yvar){
+    
+    plot_path <- paste0(cytof_qc_report_dir, "/", fcs_filename, "_plots")
+    if(!dir.exists(plot_path)) {
+      dir.create(plot_path)
+    }
+    
+    ggplot(df, aes_string(x="Time", y=as.name(yvar))) +
+      geom_hex(bins = 100, aes(fill=stat(log10(count)))) +
+      scale_y_log10(oob=scales::squish_infinite) +
+      scale_fill_viridis() +
+      theme(legend.position = "None") +
+      ggtitle(fcs_filename)
+    ggsave(paste0(plot_path, "/Time_vs_", yvar, "_plot.png"))
+  }
+  
+  lapply(channels, plotChannelsOverTime) 
+}
+
+plot_channel_time_error_handler <- function(fcs_data, fcs_filename, cytof_qc_report_dir) {
+  tryCatch(
+    plot_channel_time(fcs_data, fcs_filename, cytof_qc_report_dir),
+    error = function(e) { print(e) }
+  )
+}
+
