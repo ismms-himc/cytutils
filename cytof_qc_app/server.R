@@ -270,7 +270,6 @@ server <- function(input, output, session) {
     all_qc_reports <- ldply(cytof_qc_gating_inspection$cytof_qc_report_tables, data.frame, .id=NULL, check.names=FALSE)
     View(all_qc_reports)
     write.table(all_qc_reports, "clipboard", sep="\t", row.names=FALSE, col.names=FALSE)
-    gc()
     all_qc_reports
     }, options = list(scrollX = TRUE),
       rownames=FALSE
