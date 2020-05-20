@@ -13,7 +13,8 @@ bead_gates <- dplyr::data_frame(
 cofactor <- 5
 
 cytof_qc_observe_event <- function(input, cytof_qc_control_var, cytof_qc_file_statuses, cytof_qc_gating_inspection) {
-  shinyDirChoose(input, id = "cytof_qc_report_dir", roots = getVolumes())
+  volumes <- c(Home = fs::path_home(), "R Installation" = R.home(), getVolumes()())
+  shinyDirChoose(input, id = "cytof_qc_report_dir", roots = volumes)
 
   observeEvent(input$cytof_qc_report_dir, {
     # We reset the reactive values of our cytof_qc_control_var so that our error 
@@ -25,12 +26,14 @@ cytof_qc_observe_event <- function(input, cytof_qc_control_var, cytof_qc_file_st
 
     cytof_qc_report_dir <- input$cytof_qc_report_dir
 
-    if (class(cytof_qc_report_dir) != "integer") {
+    if (class(cytof_qc_report_dir)[1] != "integer") {
       if (cytof_qc_report_dir$root == "Computer") {
         cytof_qc_report_dir_path <- file.path(paste0(.Platform$file.sep, paste(unlist(cytof_qc_report_dir$path[-1]), collapse = .Platform$file.sep)))
       } else {
         root_drive <- str_sub(cytof_qc_report_dir$root, -3, -2)
-        cytof_qc_report_dir_path <- file.path(root_drive, paste(unlist(cytof_qc_report_dir$path[-1]), collapse = .Platform$file.sep))
+        # cytof_qc_report_dir_path <- file.path(root_drive, paste(unlist(cytof_qc_report_dir$path[-1]), collapse = .Platform$file.sep))
+        cytof_qc_report_dir_path <- parseDirPath(volumes, cytof_qc_report_dir)
+        print(cytof_qc_report_dir_path)
       }
 
       if (file.exists(cytof_qc_report_dir_path)) {
@@ -42,6 +45,10 @@ cytof_qc_observe_event <- function(input, cytof_qc_control_var, cytof_qc_file_st
     }
   })
 
+  # observe file as well as if checkbox clicked
+  # toListen <- reactive({
+  #   list(input$cytof_qc_file,input$checkGroup)
+  # })
   observeEvent(input$cytof_qc_file, {
     if (cytof_qc_file_statuses$cytof_qc_report_dir == "") {
       cytof_qc_control_var$is_output_dir_chosen_before_upload <- FALSE
@@ -157,7 +164,18 @@ cytof_qc_observe_event <- function(input, cytof_qc_control_var, cytof_qc_file_st
             cytof_qc_control_var$qc_report_export_error <- TRUE
             cytof_qc_file_statuses$unsuccessful_report_export_filenames <- c(cytof_qc_file_statuses$unsuccessful_report_export_filenames,
                                                                                       fcs_filename)
-          }    
+          }
+          
+          chkbox <- renderPrint({ input$checkGroup })
+          if(!is.null(chkbox)) {
+            # plot_channel_time_status <- plot_channel_time_error_handler(fcs_data$data,
+            #                                                             fcs_filename,
+            #                                                             cytof_qc_file_statuses$cytof_qc_report_dir)
+            # print(plot_channel_time_status)
+            print(system.time(plot_channel_time(fcs_data$data,
+                              fcs_filename,
+                              cytof_qc_file_statuses$cytof_qc_report_dir)))
+          }
 
           rm(fcs_data, 
             fcs_data_pre_processing, 

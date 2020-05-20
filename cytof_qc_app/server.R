@@ -20,6 +20,13 @@ library(ggplot2)
 library(robustbase)
 library(matrixStats)
 library(DT)
+
+if(!require(viridis)){
+  install.packages("viridis")
+  library(viridis)
+}
+
+
 source("./cytof_toolkit_helper_functions.R")
 source("./ui.R")
 source_dir("./server_modules")
