@@ -166,8 +166,8 @@ cytof_qc_observe_event <- function(input, cytof_qc_control_var, cytof_qc_file_st
                                                                                       fcs_filename)
           }
           
-          chkbox <- renderPrint({ input$checkGroup })
-          if(!is.null(chkbox)) {
+          #chkbox <- renderPrint({ input$checkGroup })
+          if(!is.null(input$checkGroup)) {
             # plot_channel_time_status <- plot_channel_time_error_handler(fcs_data$data,
             #                                                             fcs_filename,
             #                                                             cytof_qc_file_statuses$cytof_qc_report_dir)
