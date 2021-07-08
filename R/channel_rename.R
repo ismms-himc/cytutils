@@ -13,7 +13,7 @@
 #' @param ignore.mass Ignore the mass computation (FALSE by default); if TRUE
 #' the mass column is assigned <NA>
 #' @export
-channelRename <- function(path, dup_handling = "message", verbose = TRUE, na.mass.rm = TRUE, ignore.mass = FALSE) {
+channelRename <- function(path, dup_handling = "message", verbose = TRUE, na.mass.rm = TRUE, ignore.mass = FALSE, suffix = "renamed") {
   filenames <- file.path(path, dir(path, "\\.fcs$"))
   if (length(filenames) == 0) stop("could not find any FCS files at given path")
 
@@ -52,7 +52,8 @@ channelRename <- function(path, dup_handling = "message", verbose = TRUE, na.mas
     renameFcsFileChannels(dest_path,
                           filenames,
                           channels,
-                          verbose = verbose)
+                          verbose = verbose,
+                          suffix = suffix)
 
     if (verbose) message("Export done")
   } else {
@@ -166,7 +167,8 @@ renameFcsFileChannels <- function(dest_path,
   for (filename in filenames) {
     if (verbose) message(paste0("\t", filename))
 
-    fcs <- flowCore::read.FCS(filename)
+    fcs <- flowCore::read.FCS(filename, transformation = FALSE,
+                              min.limit = NULL, truncate_max_range = FALSE)
     # Merge file parameters with channel renames.
     params <- fcs@parameters@data
     params$name[is.na(params$name)] <- ""
@@ -178,12 +180,13 @@ renameFcsFileChannels <- function(dest_path,
     filename <- basename(filename)
     if (suffix != "") {
       dest_filename <-
-        file.path(dest_path, paste0(filename, ".", suffix, ".fcs"))
+        file.path(dest_path, gsub("\\.fcs$", paste0(".", suffix, ".fcs"),
+                                  filename, ignore.case = TRUE))
     } else {
       dest_filename <- file.path(dest_path, filename)
     }
 
-    # This if clause prevents bug from occuring if the current fcs file already 
+    # This if clause prevents bug from occuring if the current fcs file already
     # has appropriate channel names and descriptions.
     if (nrow(params) == 0) {
       if (verbose) message("\t--> ", dest_filename)
