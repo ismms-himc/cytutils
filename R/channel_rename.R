@@ -155,7 +155,7 @@ importChannelNames <- function(filenames, verbose = TRUE, na.mass.rm = TRUE, ign
 renameFcsFileChannels <- function(dest_path,
                                   filenames,
                                   channels,
-                                  suffix = "renamed",
+                                  suffix = "",
                                   verbose = TRUE) {
   # Only keep channels that require changes.
   channels <-
